@@ -1287,7 +1287,7 @@ public:
 class GotoLoadedDocumentCommand : public GenericPathCommand {
 public:
     static inline const std::string cname = "goto_tab";
-    static inline const std::string hname = "Open tab";
+    static inline const std::string hname = "Go to a tab by number";
     GotoLoadedDocumentCommand(MainWidget* w) : GenericPathCommand(cname, w) {}
 
     void handle_generic_requirement() {
@@ -1311,7 +1311,7 @@ public:
 class GotoNextTabCommand : public Command {
 public:
     static inline const std::string cname = "goto_next_tab";
-    static inline const std::string hname = "Go to the next tab.";
+    static inline const std::string hname = "Go to the next tab";
     GotoNextTabCommand(MainWidget* w) : Command(cname, w) {}
 
     void perform() {
@@ -1327,7 +1327,7 @@ public:
 class GotoPrevTabCommand : public Command {
 public:
     static inline const std::string cname = "goto_prev_tab";
-    static inline const std::string hname = "Go to the previous tab.";
+    static inline const std::string hname = "Go to the previous tab";
     GotoPrevTabCommand(MainWidget* w) : Command(cname, w) {}
 
     void perform() {
@@ -1477,7 +1477,7 @@ public:
 class ToggleReadingCommand : public Command {
 public:
     static inline const std::string cname = "toggle_reading";
-    static inline const std::string hname = "Start/Pause reading the selected line";
+    static inline const std::string hname = "Start or pause reading the selected line";
     ToggleReadingCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -1558,7 +1558,7 @@ public:
 class DownloadPaperWithUrlCommand : public TextCommand {
 public:
     static inline const std::string cname = "download_paper_with_url";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Download a paper from a URL";
 
     DownloadPaperWithUrlCommand(MainWidget* w) : TextCommand(cname, w) {
     };
@@ -1576,7 +1576,7 @@ public:
 class ControlMenuCommand : public TextCommand {
 public:
     static inline const std::string cname = "control_menu";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Control the open menu or text bar (for scripts)";
     ControlMenuCommand(MainWidget* w) : TextCommand(cname, w) {
     };
 
@@ -1599,7 +1599,7 @@ public:
 class ExecuteMacroCommand : public TextCommand {
 public:
     static inline const std::string cname = "execute_macro";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Run a macro (a sequence of commands)";
     ExecuteMacroCommand(MainWidget* w) : TextCommand(cname, w) {
     };
 
@@ -1616,7 +1616,7 @@ public:
 class SetViewStateCommand : public TextCommand {
 public:
     static inline const std::string cname = "set_view_state";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Set view offsets and zoom directly (for scripts)";
     SetViewStateCommand(MainWidget* w) : TextCommand(cname, w) {
     };
 
@@ -1650,7 +1650,7 @@ private:
     std::optional<std::wstring> text2 = {};
 public:
     static inline const std::string cname = "test_command";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "[internal] Test command";
     TestCommand(MainWidget* w) : Command(cname, w) {};
 
     void set_text_requirement(std::wstring value) {
@@ -1684,7 +1684,7 @@ class GetConfigNoDialogCommand : public Command {
     std::optional<std::wstring> command_name = {};
 public:
     static inline const std::string cname = "get_config_no_dialog";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Get config values without a dialog (for scripts)";
     GetConfigNoDialogCommand(MainWidget* w) : Command(cname, w) {};
 
     std::optional<Requirement> next_requirement(MainWidget* widget) {
@@ -1729,7 +1729,7 @@ class ShowTextPromptCommand : public Command {
     std::optional<std::wstring> default_value = {};
 public:
     static inline const std::string cname = "show_text_prompt";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Prompt for text and return it (for macros)";
     ShowTextPromptCommand(MainWidget* w) : Command(cname, w) {};
 
     std::optional<Requirement> next_requirement(MainWidget* widget) {
@@ -1779,7 +1779,7 @@ class GetStateJsonCommand : public Command {
 
 public:
     static inline const std::string cname = "get_state_json";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Get the state of all windows as JSON (for scripts)";
     GetStateJsonCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -1793,7 +1793,7 @@ class SetStateJsonCommand : public TextCommand {
 
 public:
     static inline const std::string cname = "set_state_json";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Restore window states from JSON (for scripts)";
     SetStateJsonCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -1807,7 +1807,7 @@ class GetPaperNameCommand : public Command {
 
 public:
     static inline const std::string cname = "get_paper_name";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Get the document's detected title (for scripts)";
     GetPaperNameCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -1819,7 +1819,7 @@ class GetOverviewPaperName : public Command {
 
 public:
     static inline const std::string cname = "get_overview_paper_name";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Get the paper name in the overview window (for scripts)";
     GetOverviewPaperName(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -1832,7 +1832,7 @@ class ToggleRectHintsCommand : public Command {
 
 public:
     static inline const std::string cname = "toggle_rect_hints";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Show the touch tap zones (touch UI)";
     ToggleRectHintsCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -1845,7 +1845,7 @@ class GetAnnotationsJsonCommand : public Command {
 
 public:
     static inline const std::string cname = "get_annotations_json";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Get the document's annotations as JSON (for scripts)";
     GetAnnotationsJsonCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -1864,7 +1864,7 @@ private:
 
 public:
     static inline const std::string cname = "show_custom_options";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Pick from a custom option list (for macros)";
     ShowOptionsCommand(MainWidget* w) : Command(cname, w) {};
 
     std::optional<Requirement> next_requirement(MainWidget* widget) {
@@ -1926,7 +1926,7 @@ public:
 class GetConfigCommand : public TextCommand {
 public:
     static inline const std::string cname = "get_config_value";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Show the current value of a config";
     GetConfigCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -1949,7 +1949,7 @@ public:
 class DownloadPaperWithNameCommand : public TextCommand {
 public:
     static inline const std::string cname = "download_paper_with_name";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Download a paper by name";
     DownloadPaperWithNameCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -1965,7 +1965,7 @@ public:
 class AddAnnotationToSelectedHighlightCommand : public TextCommand {
 public:
     static inline const std::string cname = "add_annot_to_selected_highlight";
-    static inline const std::string hname = "Add annotation to selected highlight";
+    static inline const std::string hname = "Add a text annotation to the selected highlight";
     AddAnnotationToSelectedHighlightCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -2056,7 +2056,7 @@ public:
 class ChapterSearchCommand : public TextCommand {
 public:
     static inline const std::string cname = "chapter_search";
-    static inline const std::string hname = "Search current chapter";
+    static inline const std::string hname = "Search within the current chapter";
     ChapterSearchCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -2104,7 +2104,7 @@ public:
 class AddBookmarkCommand : public TextCommand {
 public:
     static inline const std::string cname = "add_bookmark";
-    static inline const std::string hname = "Add an invisible bookmark in the current location";
+    static inline const std::string hname = "Add a bookmark at the current location";
     AddBookmarkCommand(MainWidget* w) : TextCommand(cname, w) {}
 
     void perform() {
@@ -2186,7 +2186,7 @@ class CreateVisiblePortalCommand : public Command {
 
 public:
     static inline const std::string cname = "create_visible_portal";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Create a portal shown as an on-page window";
 
     std::optional<AbsoluteDocumentPos> point_;
 
@@ -2215,7 +2215,7 @@ class CopyDrawingsFromScratchpadCommand : public Command {
 
 public:
     static inline const std::string cname = "copy_drawings_from_scratchpad";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Copy drawings from the scratchpad into the document";
 
     std::optional<AbsoluteRect> rect_;
 
@@ -2270,7 +2270,7 @@ class CopyScreenshotToClipboard : public Command {
 
 public:
     static inline const std::string cname = "copy_screenshot_to_clipboard";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Copy a screenshot of a selected region to the clipboard";
 
     std::optional<AbsoluteRect> rect_;
 
@@ -2357,7 +2357,7 @@ class AddBookmarkFreetextCommand : public Command {
 
 public:
     static inline const std::string cname = "add_freetext_bookmark";
-    static inline const std::string hname = "Add a text bookmark in the selected rectangle";
+    static inline const std::string hname = "Add a text bookmark shown in the selected rectangle";
 
     std::optional<std::wstring> text_;
     std::optional<AbsoluteRect> rect_;
@@ -2435,7 +2435,7 @@ public:
 class ShowMarks : public GenericGotoLocationCommand {
 public:
     static inline const std::string cname = "show_marks";
-    static inline const std::string hname = "Show the list of the current marks in all documents.";
+    static inline const std::string hname = "Show the list of the current marks in all documents";
     ShowMarks(MainWidget* w) : GenericGotoLocationCommand(cname, w) {};
 
     void handle_generic_requirement() {
@@ -2526,7 +2526,7 @@ public:
 class GotoHighlightGlobalCommand : public GenericPathAndLocationCommand {
 public:
     static inline const std::string cname = "goto_highlight_g";
-    static inline const std::string hname = "Open the highlight list of the all documents";
+    static inline const std::string hname = "Open the highlight list of all documents";
 
     GotoHighlightGlobalCommand(MainWidget* w) : GenericPathAndLocationCommand(cname, w) {};
 
@@ -2612,7 +2612,7 @@ public:
 class ToggleWindowConfigurationCommand : public Command {
 public:
     static inline const std::string cname = "toggle_window_configuration";
-    static inline const std::string hname = "Toggle between one window and two window configuration";
+    static inline const std::string hname = "Switch between one-window and two-window layout";
     ToggleWindowConfigurationCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->toggle_window_configuration();
@@ -2624,7 +2624,7 @@ public:
 class ShowPortalWindowCommand : public Command {
 public:
     static inline const std::string cname = "show_portal_window";
-    static inline const std::string hname = "Show the portal window (always show in two window configuration, regardless of the current configuration)";
+    static inline const std::string hname = "Show the helper window in the two-window layout";
     ShowPortalWindowCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->show_portal_window();
@@ -2678,7 +2678,7 @@ public:
 class CommandPaletteCommand : public Command {
 public:
     static inline const std::string cname = "command_palette";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Open the command palette";
     CommandPaletteCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -2691,7 +2691,7 @@ public:
 class CommandCommand : public Command {
 public:
     static inline const std::string cname = "command";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Run a command by name";
     CommandCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -2723,7 +2723,7 @@ public:
 class ScreenshotCommand : public Command {
 public:
     static inline const std::string cname = "screenshot";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Save a screenshot of the window to a file";
     ScreenshotCommand(MainWidget* w) : Command(cname, w) {};
 
     std::wstring file_name;
@@ -2750,7 +2750,7 @@ public:
 class FramebufferScreenshotCommand : public Command {
 public:
     static inline const std::string cname = "framebuffer_screenshot";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Save a screenshot of the rendered view to a file";
     FramebufferScreenshotCommand(MainWidget* w) : Command(cname, w) {};
 
     std::wstring file_name;
@@ -2778,7 +2778,7 @@ public:
 class ExportDefaultConfigFile : public Command {
 public:
     static inline const std::string cname = "export_default_config_file";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Write the fully documented default config to a file";
     ExportDefaultConfigFile(MainWidget* w) : Command(cname, w) {};
 
     std::wstring file_name;
@@ -2806,7 +2806,7 @@ public:
 class ExportCommandNamesCommand : public Command {
 public:
     static inline const std::string cname = "export_command_names";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Write all command names to a file";
     ExportCommandNamesCommand(MainWidget* w) : Command(cname, w) {};
 
     std::wstring file_name;
@@ -2837,7 +2837,7 @@ public:
 class ExportConfigNamesCommand : public Command {
 public:
     static inline const std::string cname = "export_config_names";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Write all config names to a file";
     ExportConfigNamesCommand(MainWidget* w) : Command(cname, w) {};
 
     std::wstring file_name;
@@ -2918,7 +2918,7 @@ class WaitCommand : public GenericWaitCommand {
     QDateTime start_time;
 public:
     static inline const std::string cname = "wait";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Wait for a number of milliseconds (for macros)";
     WaitCommand(MainWidget* w) : GenericWaitCommand(cname, w) {
         start_time = QDateTime::currentDateTime();
     };
@@ -2945,7 +2945,7 @@ public:
 class WaitForIndexingToFinishCommand : public GenericWaitCommand {
 public:
     static inline const std::string cname = "wait_for_indexing_to_finish";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Wait until document indexing finishes (for macros)";
     WaitForIndexingToFinishCommand(MainWidget* w) : GenericWaitCommand(cname, w) {};
 
     void set_generic_requirement(QVariant value)
@@ -2961,7 +2961,7 @@ public:
 class WaitForRendersToFinishCommand : public GenericWaitCommand {
 public:
     static inline const std::string cname = "wait_for_renders_to_finish";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Wait until rendering finishes (for macros)";
     WaitForRendersToFinishCommand(MainWidget* w) : GenericWaitCommand(cname, w) {};
 
     bool is_ready() override {
@@ -2972,7 +2972,7 @@ public:
 class WaitForSearchToFinishCommand : public GenericWaitCommand {
 public:
     static inline const std::string cname = "wait_for_search_to_finish";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Wait until the search finishes (for macros)";
     WaitForSearchToFinishCommand(MainWidget* w) : GenericWaitCommand(cname, w) {};
 
     bool is_ready() override {
@@ -3015,7 +3015,7 @@ public:
 class OpenDocumentInDirectoryCommand : public Command {
 public:
     static inline const std::string cname = "open_document_in_directory";
-    static inline const std::string hname = "Open a document using the native file explorer, rooted in the given directory.";
+    static inline const std::string hname = "Open a document using the native file explorer, rooted in the given directory";
     OpenDocumentInDirectoryCommand(MainWidget* w) : Command(cname, w) {};
 
     std::wstring root_dir;
@@ -3147,7 +3147,7 @@ public:
 class MoveUpSmoothCommand : public MoveSmoothCommand {
 public:
     static inline const std::string cname = "move_up_smooth";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Scroll up smoothly (hold to continue)";
     MoveUpSmoothCommand(MainWidget* w) : MoveSmoothCommand(cname, w) {};
 
     bool is_up() override {
@@ -3158,7 +3158,7 @@ public:
 class MoveDownSmoothCommand : public MoveSmoothCommand {
 public:
     static inline const std::string cname = "move_down_smooth";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Scroll down smoothly (hold to continue)";
     MoveDownSmoothCommand(MainWidget* w) : MoveSmoothCommand(cname, w) {};
 
     bool is_down() {
@@ -3169,7 +3169,7 @@ public:
 class MoveLeftSmooth : public MoveSmoothCommand {
 public:
     static inline const std::string cname = "move_left_smooth";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Scroll left smoothly (hold to continue)";
     MoveLeftSmooth(MainWidget* w) : MoveSmoothCommand(cname, w) {};
 
     bool is_left() {
@@ -3180,7 +3180,7 @@ public:
 class MoveRightSmooth : public MoveSmoothCommand {
 public:
     static inline const std::string cname = "move_right_smooth";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Scroll right smoothly (hold to continue)";
     MoveRightSmooth(MainWidget* w) : MoveSmoothCommand(cname, w) {};
 
     bool is_right() {
@@ -3253,7 +3253,7 @@ public:
 class FitEpubToWindowCommand : public Command {
 public:
     static inline const std::string cname = "fit_epub_to_window";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Reflow the EPUB to fit the window";
     FitEpubToWindowCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -3430,7 +3430,7 @@ public:
 class FitToPageSmartCommand : public Command {
 public:
     static inline const std::string cname = "fit_to_page_smart";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Fit the whole page to the window, ignoring white margins";
     FitToPageSmartCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->main_document_view->fit_to_page_height_and_width_smart();
@@ -3504,7 +3504,7 @@ public:
 class GotoDefinitionCommand : public Command {
 public:
     static inline const std::string cname = "goto_definition";
-    static inline const std::string hname = "Go to the reference in current highlighted line";
+    static inline const std::string hname = "Go to the reference on the current ruler line";
     GotoDefinitionCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         if (widget->main_document_view->goto_definition()) {
@@ -3521,7 +3521,7 @@ public:
 class RepeatLastCommandCommnad : public Command {
 public:
     static inline const std::string cname = "repeat_last_command";
-    static inline const std::string hname = "Repeat the last command executed.";
+    static inline const std::string hname = "Repeat the last command executed";
     RepeatLastCommandCommnad(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->repeat_last_command();
@@ -3531,7 +3531,7 @@ public:
 class OverviewDefinitionCommand : public Command {
 public:
     static inline const std::string cname = "overview_definition";
-    static inline const std::string hname = "Open an overview to the reference in current highlighted line";
+    static inline const std::string hname = "Preview the reference on the current ruler line";
     OverviewDefinitionCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->overview_to_definition();
@@ -3541,7 +3541,7 @@ public:
 class PortalToDefinitionCommand : public Command {
 public:
     static inline const std::string cname = "portal_to_definition";
-    static inline const std::string hname = "Create a portal to the definition in current highlighted line";
+    static inline const std::string hname = "Create a portal to the reference on the current ruler line";
     PortalToDefinitionCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->portal_to_definition();
@@ -3584,7 +3584,7 @@ public:
 class MoveVisualMarkPrevCommand : public Command {
 public:
     static inline const std::string cname = "move_visual_mark_prev";
-    static inline const std::string hname = "Move the current highlighted line to the previous";
+    static inline const std::string hname = "Move the current highlighted line to the previous line";
     MoveVisualMarkPrevCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->move_visual_mark_prev();
@@ -3707,7 +3707,7 @@ public:
 class EditSelectedHighlightCommand : public TextCommand {
 public:
     static inline const std::string cname = "edit_selected_highlight";
-    static inline const std::string hname = "Edit the text comment of current selected highlight";
+    static inline const std::string hname = "Edit the text annotation of the selected highlight";
     int index = -1;
 
     EditSelectedHighlightCommand(MainWidget* w) : TextCommand(cname, w) {};
@@ -3922,7 +3922,7 @@ class DeleteVisibleAnnotationCommand : public GenericVisibleAnnotationCommand {
 
 public:
     static inline const std::string cname = "delete_visible_annotation";
-    static inline const std::string hname = "Delete the selected annotation";
+    static inline const std::string hname = "Delete a visible bookmark or highlight";
     DeleteVisibleAnnotationCommand(MainWidget* w) : GenericVisibleAnnotationCommand(cname, w) {};
 
     void perform_with_visible_object_selected() override {
@@ -3939,7 +3939,7 @@ class DeleteSelectedAnnotationCommand : public Command {
 
 public:
     static inline const std::string cname = "delete_selected_annotation";
-    static inline const std::string hname = "Delete the selected annotation";
+    static inline const std::string hname = "Delete the selected bookmark or highlight";
     DeleteSelectedAnnotationCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() override {
@@ -3969,7 +3969,7 @@ class EditVisibleAnnotationCommand : public GenericVisibleAnnotationCommand {
 
 public:
     static inline const std::string cname = "edit_visible_annotation";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Edit a visible bookmark or highlight annotation";
     EditVisibleAnnotationCommand(MainWidget* w) : GenericVisibleAnnotationCommand(cname, w) {};
 
     void perform_with_visible_object_selected() override {
@@ -3999,7 +3999,7 @@ class ChangeHighlightTypeCommand : public GenericHighlightCommand {
 
 public:
     static inline const std::string cname = "change_highlight";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Change the type of a highlight";
     ChangeHighlightTypeCommand(MainWidget* w) : GenericHighlightCommand(cname, w) {};
 
     void perform_with_highlight_selected() override {
@@ -4012,7 +4012,7 @@ class AddAnnotationToHighlightCommand : public GenericHighlightCommand {
 
 public:
     static inline const std::string cname = "add_annot_to_highlight";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Add a text annotation to a highlight";
     AddAnnotationToHighlightCommand(MainWidget* w) : GenericHighlightCommand(cname, w) {};
 
     void perform_with_highlight_selected() override {
@@ -4072,7 +4072,7 @@ public:
 class OpenAllDocsCommand : public GenericPathAndLocationCommand {
 public:
     static inline const std::string cname = "open_all_docs";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Search and open any indexed document";
     OpenAllDocsCommand(MainWidget* w) : GenericPathAndLocationCommand(cname, w, true) {};
 
     void handle_generic_requirement() {
@@ -4086,7 +4086,7 @@ public:
 class OpenDocumentEmbeddedCommand : public GenericPathCommand {
 public:
     static inline const std::string cname = "open_document_embedded";
-    static inline const std::string hname = "Open an embedded file explorer";
+    static inline const std::string hname = "Open a document with the built-in file browser";
     OpenDocumentEmbeddedCommand(MainWidget* w) : GenericPathCommand(cname, w) {};
 
     void handle_generic_requirement() {
@@ -4117,7 +4117,7 @@ public:
 class OpenDocumentEmbeddedFromCurrentPathCommand : public GenericPathCommand {
 public:
     static inline const std::string cname = "open_document_embedded_from_current_path";
-    static inline const std::string hname = "Open an embedded file explorer, starting in the directory of current document";
+    static inline const std::string hname = "Open a document with the built-in file browser, starting at the current document's folder";
     OpenDocumentEmbeddedFromCurrentPathCommand(MainWidget* w) : GenericPathCommand(cname, w) {};
 
     void handle_generic_requirement() {
@@ -4148,7 +4148,7 @@ public:
 class CopyCommand : public Command {
 public:
     static inline const std::string cname = "copy";
-    static inline const std::string hname = "Copy";
+    static inline const std::string hname = "Copy the selected text";
     CopyCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         copy_to_clipboard(widget->get_selected_text(ADD_NEWLINES_WHEN_COPYING_TEXT));
@@ -4281,7 +4281,7 @@ public:
 class OverviewRulerPortalCommand : public Command {
 public:
     static inline const std::string cname = "overview_to_ruler_portal";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Preview the portal on the current ruler line";
     OverviewRulerPortalCommand(MainWidget* w) : Command(cname, w) {};
 public:
     void perform() {
@@ -4292,7 +4292,7 @@ public:
 class GotoRulerPortalCommand : public Command {
 public:
     static inline const std::string cname = "goto_ruler_portal";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Jump to the portal on the current ruler line";
     GotoRulerPortalCommand(MainWidget* w) : Command(cname, w) {};
     std::optional<char> mark = {};
 
@@ -4343,7 +4343,7 @@ public:
 class PrintNonDefaultConfigs : public Command {
 public:
     static inline const std::string cname = "print_non_default_configs";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "[internal] Print configs that differ from their defaults";
     PrintNonDefaultConfigs(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->print_non_default_configs();
@@ -4354,7 +4354,7 @@ public:
 class PrintUndocumentedCommandsCommand : public Command {
 public:
     static inline const std::string cname = "print_undocumented_commands";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "[internal] Print commands lacking documentation";
     PrintUndocumentedCommandsCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->print_undocumented_commands();
@@ -4366,7 +4366,7 @@ public:
 class PrintUndocumentedConfigsCommand : public Command {
 public:
     static inline const std::string cname = "print_undocumented_configs";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "[internal] Print configs lacking documentation";
     PrintUndocumentedConfigsCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->print_undocumented_configs();
@@ -4402,7 +4402,7 @@ public:
 class ToggleOneWindowCommand : public Command {
 public:
     static inline const std::string cname = "toggle_one_window";
-    static inline const std::string hname = "Open/close helper window";
+    static inline const std::string hname = "Show/hide the helper window";
     ToggleOneWindowCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->toggle_two_window_mode();
@@ -4414,7 +4414,7 @@ public:
 class ToggleHighlightCommand : public Command {
 public:
     static inline const std::string cname = "toggle_highlight";
-    static inline const std::string hname = "Toggle whether PDF links are highlighted";
+    static inline const std::string hname = "Toggle PDF link highlighting";
     ToggleHighlightCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->toggle_highlight_links();
@@ -4438,7 +4438,7 @@ public:
 class TurnOnSynctexCommand : public Command {
 public:
     static inline const std::string cname = "turn_on_synctex";
-    static inline const std::string hname = "Turn synxtex mode on";
+    static inline const std::string hname = "Turn synctex mode on";
     TurnOnSynctexCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->set_synctex_mode(true);
@@ -4461,7 +4461,7 @@ public:
 class ForwardSearchCommand : public Command {
 public:
     static inline const std::string cname = "synctex_forward_search";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Go to the PDF location of a LaTeX source line (Synctex)";
     ForwardSearchCommand(MainWidget* w) : Command(cname, w) {};
 
     std::optional<std::wstring> file_path = {};
@@ -4529,7 +4529,7 @@ public:
 class OpenSelectedUrlCommand : public Command {
 public:
     static inline const std::string cname = "open_selected_url";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Open the selected text as a URL";
     OpenSelectedUrlCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         open_web_url((widget->get_selected_text()).c_str());
@@ -4599,7 +4599,7 @@ public:
 class ShowContextMenuCommand : public Command {
 public:
     static inline const std::string cname = "show_context_menu";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "[internal] Show a popup menu at the cursor";
     ShowContextMenuCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -4640,7 +4640,7 @@ std::unique_ptr<MenuItems> parse_menu_string(MainWidget* widget, QString name, Q
 class ShowCustomContextMenuCommand : public Command {
 public:
     static inline const std::string cname = "show_custom_context_menu";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Show a custom popup menu (for macros)";
     ShowCustomContextMenuCommand(MainWidget* w) : Command(cname, w) {};
 
     std::optional<std::wstring> menu_name = {};
@@ -4833,7 +4833,7 @@ public:
 class EscapeCommand : public Command {
 public:
     static inline const std::string cname = "escape";
-    static inline const std::string hname = "Escape";
+    static inline const std::string hname = "Close the open menu or overview, cancel search and pending commands";
     EscapeCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -4859,7 +4859,7 @@ public:
 class OpenLinkCommand : public Command {
 public:
     static inline const std::string cname = "open_link";
-    static inline const std::string hname = "Go to PDF links using keyboard";
+    static inline const std::string hname = "Open a PDF link selected with the keyboard";
     OpenLinkCommand(MainWidget* w) : Command(cname, w) {};
 protected:
     std::optional<std::wstring> text = {};
@@ -5051,7 +5051,7 @@ void KeyboardSelectPointCommand::set_symbol_requirement(char value) {
 class OverviewLinkCommand : public OpenLinkCommand {
 public:
     static inline const std::string cname = "overview_link";
-    static inline const std::string hname = "Overview to PDF links using keyboard";
+    static inline const std::string hname = "Preview a PDF link selected with the keyboard";
     OverviewLinkCommand(MainWidget* w) : OpenLinkCommand(w) {};
 
     void perform() {
@@ -5066,7 +5066,7 @@ public:
 class PortalToLinkCommand : public OpenLinkCommand {
 public:
     static inline const std::string cname = "portal_to_link";
-    static inline const std::string hname = "Create a portal to PDF links using keyboard";
+    static inline const std::string hname = "Create a portal to a PDF link selected with the keyboard";
     PortalToLinkCommand(MainWidget* w) : OpenLinkCommand(w) {};
 
     void perform() {
@@ -5081,7 +5081,7 @@ public:
 class CopyLinkCommand : public TextCommand {
 public:
     static inline const std::string cname = "copy_link";
-    static inline const std::string hname = "Copy URL of PDF links using keyboard";
+    static inline const std::string hname = "Copy the URL of a PDF link selected with the keyboard";
     CopyLinkCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -5103,7 +5103,7 @@ public:
 class KeyboardSelectCommand : public TextCommand {
 public:
     static inline const std::string cname = "keyboard_select";
-    static inline const std::string hname = "Select text using keyboard";
+    static inline const std::string hname = "Select text with the keyboard";
     KeyboardSelectCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void on_text_change(const QString& new_text) override {
@@ -5139,7 +5139,7 @@ public:
 class KeyboardOverviewCommand : public TextCommand {
 public:
     static inline const std::string cname = "keyboard_overview";
-    static inline const std::string hname = "Open an overview using keyboard";
+    static inline const std::string hname = "Preview a word selected with the keyboard";
     KeyboardOverviewCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -5164,7 +5164,7 @@ public:
 class KeyboardSmartjumpCommand : public TextCommand {
 public:
     static inline const std::string cname = "keyboard_smart_jump";
-    static inline const std::string hname = "Smart jump using keyboard";
+    static inline const std::string hname = "Smart jump to a word selected with the keyboard";
     KeyboardSmartjumpCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -5192,7 +5192,7 @@ public:
 class KeysCommand : public Command {
 public:
     static inline const std::string cname = "keys";
-    static inline const std::string hname = "Open the default keys config file";
+    static inline const std::string hname = "Open the global keys config file";
     KeysCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -5205,7 +5205,7 @@ public:
 class KeysUserCommand : public Command {
 public:
     static inline const std::string cname = "keys_user";
-    static inline const std::string hname = "Open the default keys_user config file";
+    static inline const std::string hname = "Open your personal keys config file";
     KeysUserCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -5234,7 +5234,7 @@ public:
 class PrefsCommand : public Command {
 public:
     static inline const std::string cname = "prefs";
-    static inline const std::string hname = "Open the default prefs config file";
+    static inline const std::string hname = "Open the global prefs config file";
     PrefsCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -5247,7 +5247,7 @@ public:
 class PrefsUserCommand : public Command {
 public:
     static inline const std::string cname = "prefs_user";
-    static inline const std::string hname = "Open the default prefs_user config file";
+    static inline const std::string hname = "Open your personal prefs config file";
     PrefsUserCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -5263,7 +5263,7 @@ public:
 class PrefsUserAllCommand : public Command {
 public:
     static inline const std::string cname = "prefs_user_all";
-    static inline const std::string hname = "List all user keys config files";
+    static inline const std::string hname = "List all user prefs config files";
     PrefsUserAllCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -5327,7 +5327,7 @@ public:
 class SynctexUnderCursorCommand : public Command {
 public:
     static inline const std::string cname = "synctex_under_cursor";
-    static inline const std::string hname = "Perform a synctex search to the tex file location corresponding to cursor location";
+    static inline const std::string hname = "Open the LaTeX source at the cursor (Synctex)";
     SynctexUnderCursorCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -5340,7 +5340,7 @@ public:
 class SynctexUnderRulerCommand : public Command {
 public:
     static inline const std::string cname = "synctex_under_ruler";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Open the LaTeX source at the ruler line (Synctex)";
     SynctexUnderRulerCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -5594,7 +5594,7 @@ public:
 class AddHighlightWithCurrentTypeCommand : public Command {
 public:
     static inline const std::string cname = "add_highlight_with_current_type";
-    static inline const std::string hname = "Highlight selected text with current selected highlight type";
+    static inline const std::string hname = "Highlight the selected text with the current highlight type";
     AddHighlightWithCurrentTypeCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         if (widget->main_document_view->selected_character_rects.size() > 0) {
@@ -5636,7 +5636,7 @@ public:
 class ToggleFastreadCommand : public Command {
 public:
     static inline const std::string cname = "toggle_fastread";
-    static inline const std::string hname = "Go to top of current page";
+    static inline const std::string hname = "Toggle fastread mode (dim all but the start of each word)";
     ToggleFastreadCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         widget->toggle_fastread();
@@ -5726,7 +5726,7 @@ public:
 class SetStatusStringCommand : public TextCommand {
 public:
     static inline const std::string cname = "set_status_string";
-    static inline const std::string hname = "Set custom message to be shown in statusbar";
+    static inline const std::string hname = "Show a custom message in the statusbar";
     SetStatusStringCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -5768,7 +5768,7 @@ public:
 class NextPreviewCommand : public Command {
 public:
     static inline const std::string cname = "next_overview";
-    static inline const std::string hname = "Go to the next candidate in overview window";
+    static inline const std::string hname = "Show the next candidate in the overview window";
     NextPreviewCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         if (widget->smart_view_candidates.size() > 0) {
@@ -5783,7 +5783,7 @@ public:
 class PreviousPreviewCommand : public Command {
 public:
     static inline const std::string cname = "previous_overview";
-    static inline const std::string hname = "Go to the previous candidate in overview window";
+    static inline const std::string hname = "Show the previous candidate in the overview window";
     PreviousPreviewCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         if (widget->smart_view_candidates.size() > 0) {
@@ -5832,7 +5832,7 @@ public:
 class SetWindowRectCommand : public TextCommand {
 public:
     static inline const std::string cname = "set_window_rect";
-    static inline const std::string hname = "Move and resize the window to the given coordinates (in pixels).";
+    static inline const std::string hname = "Move and resize the window to the given coordinates (in pixels)";
     SetWindowRectCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -5885,7 +5885,7 @@ public:
 class DownloadOverviewPaperCommand : public TextCommand {
 public:
     static inline const std::string cname = "download_overview_paper";
-    static inline const std::string hname = "Download the referenced paper overview window";
+    static inline const std::string hname = "Download the paper referenced in the overview window";
     std::optional<AbsoluteRect> source_rect = {};
     std::wstring src_doc_path;
 
@@ -5988,7 +5988,7 @@ public:
 class ScanNewFilesFromScanDirCommand : public Command {
 public:
     static inline const std::string cname = "scan_new_files";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Index new documents in the scan directory";
     ScanNewFilesFromScanDirCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6014,7 +6014,7 @@ public:
 class SelectNextCharCommand : public Command {
 public:
     inline static const std::string cname = "select_next_char";
-    inline static const std::string hname = "Select the next character after the current selection.";
+    inline static const std::string hname = "Select the next character after the current selection";
 
     SelectNextCharCommand(MainWidget* w) : Command(cname, w) {};
 
@@ -6027,7 +6027,7 @@ public:
 class UnselectLastCharCommand : public Command {
 public:
     inline static const std::string cname = "unselect_last_char";
-    inline static const std::string hname = "Unselect the last character in the current selection.";
+    inline static const std::string hname = "Unselect the last character in the current selection";
 
     UnselectLastCharCommand(MainWidget* w) : Command(cname, w) {};
 
@@ -6040,7 +6040,7 @@ public:
 class CollapseMenuCommand : public Command {
 public:
     inline static const std::string cname = "toggle_menu_collapse";
-    inline static const std::string hname = "Toggle collapse of tree menus.";
+    inline static const std::string hname = "Toggle collapse of tree menus";
 
     CollapseMenuCommand(MainWidget* w) : Command(cname, w) {};
 
@@ -6053,7 +6053,7 @@ public:
 class ShowTouchMainMenu : public Command {
 public:
     static inline const std::string cname = "show_touch_main_menu";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Open the main menu (touch UI)";
     ShowTouchMainMenu(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6065,7 +6065,7 @@ public:
 class ShowTouchDrawingMenu : public Command {
 public:
     static inline const std::string cname = "show_touch_draw_controls";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Show the drawing controls (touch UI)";
     ShowTouchDrawingMenu(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6077,7 +6077,7 @@ public:
 class ShowTouchSettingsMenu : public Command {
 public:
     static inline const std::string cname = "show_touch_settings_menu";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Open the settings screen (touch UI)";
     ShowTouchSettingsMenu(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6090,7 +6090,7 @@ public:
 class ExportPythonApiCommand : public Command {
 public:
     static inline const std::string cname = "export_python_api";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Generate and install the Python extension API";
     ExportPythonApiCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6102,7 +6102,7 @@ public:
 class SelectCurrentSearchMatchCommand : public Command {
 public:
     static inline const std::string cname = "select_current_search_match";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Select the current search match and end the search";
     SelectCurrentSearchMatchCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6126,7 +6126,7 @@ public:
 class SelectRectCommand : public Command {
 public:
     static inline const std::string cname = "select_rect";
-    static inline const std::string hname = "Select a rectangle.";
+    static inline const std::string hname = "Select a rectangle";
     SelectRectCommand (MainWidget* w) : Command(cname, w) {};
     std::optional<AbsoluteRect> absrect = {};
 
@@ -6262,7 +6262,7 @@ public:
 class WriteAnnotationsFileCommand : public Command {
 public:
     static inline const std::string cname = "write_annotations_file";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Write the document's annotation file now";
     WriteAnnotationsFileCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6274,7 +6274,7 @@ public:
 class LoadAnnotationsFileCommand : public Command {
 public:
     static inline const std::string cname = "load_annotations_file";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Reload the document's annotation file (merge)";
     LoadAnnotationsFileCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6286,7 +6286,7 @@ public:
 class LoadAnnotationsFileSyncDeletedCommand : public Command {
 public:
     static inline const std::string cname = "import_annotations_file_sync_deleted";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Reload the annotation file and delete annotations missing from it";
     LoadAnnotationsFileSyncDeletedCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6310,7 +6310,7 @@ public:
 class SetPageOffsetCommand : public TextCommand {
 public:
     static inline const std::string cname = "set_page_offset";
-    static inline const std::string hname = "Toggle visual scroll mode";
+    static inline const std::string hname = "Set the page number offset (align with printed page numbers)";
     SetPageOffsetCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
@@ -6443,7 +6443,7 @@ public:
 class ExportGeneratedTocCommand : public Command {
 public:
     static inline const std::string cname = "export_generated_toc";
-    static inline const std::string hname = "Export the generated table of contents into a text file.";
+    static inline const std::string hname = "Export the generated table of contents into a text file";
     ExportGeneratedTocCommand(MainWidget* w) : Command(cname, w) {};
 
     std::optional<std::wstring> file_path = {};
@@ -6503,7 +6503,7 @@ public:
 class OpenLastDocumentCommand : public Command {
 public:
     static inline const std::string cname = "open_last_document";
-    static inline const std::string hname = "Switch to previous opened document";
+    static inline const std::string hname = "Switch to the previously opened document";
     OpenLastDocumentCommand(MainWidget* w) : Command(cname, w) {};
 
     bool pushes_state() {
@@ -6524,7 +6524,7 @@ public:
 class AddMarkedDataCommand : public Command {
 public:
     static inline const std::string cname = "add_marked_data";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "[internal] Mark the selected text for data export";
     AddMarkedDataCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6537,7 +6537,7 @@ public:
 class UndoMarkedDataCommand : public Command {
 public:
     static inline const std::string cname = "undo_marked_data";
-    static inline const std::string hname = "[internal]";
+    static inline const std::string hname = "[internal] Undo the last marked data";
     UndoMarkedDataCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6550,7 +6550,7 @@ public:
 class GotoRandomPageCommand : public Command {
 public:
     static inline const std::string cname = "goto_random_page";
-    static inline const std::string hname = "[internal]";
+    static inline const std::string hname = "[internal] Go to a random page";
     GotoRandomPageCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6563,7 +6563,7 @@ public:
 class RemoveMarkedDataCommand : public Command {
 public:
     static inline const std::string cname = "remove_marked_data";
-    static inline const std::string hname = "[internal]";
+    static inline const std::string hname = "[internal] Remove the marked data";
     RemoveMarkedDataCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6576,7 +6576,7 @@ public:
 class ExportMarkedDataCommand : public Command {
 public:
     static inline const std::string cname = "export_marked_data";
-    static inline const std::string hname = "[internal]";
+    static inline const std::string hname = "[internal] Export the marked data as JSON";
     ExportMarkedDataCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6604,7 +6604,7 @@ public:
 class ClearCurrentPageDrawingsCommand : public Command {
 public:
     static inline const std::string cname = "clear_current_page_drawings";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Delete all freehand drawings on the current page";
     ClearCurrentPageDrawingsCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
@@ -6618,7 +6618,7 @@ public:
 class ClearCurrentDocumentDrawingsCommand : public Command {
 public:
     static inline const std::string cname = "clear_current_document_drawings";
-    static inline const std::string hname = "";
+    static inline const std::string hname = "Delete all freehand drawings in the document";
     ClearCurrentDocumentDrawingsCommand(MainWidget* w) : Command(cname, w) {};
 
     void perform() {
