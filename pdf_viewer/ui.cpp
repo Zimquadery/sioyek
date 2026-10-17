@@ -1254,9 +1254,17 @@ QList<QStandardItem*> CommandSelector::get_item(std::string command_name) {
 
     }
     QStandardItem* name_item = new QStandardItem(QString::fromStdString(command_name));
+
+    std::string command_desc = "";
+    auto desc_it = main_widget->command_manager->command_human_readable_names.find(command_name);
+    if (desc_it != main_widget->command_manager->command_human_readable_names.end()) {
+        command_desc = desc_it->second;
+    }
+    QStandardItem* desc_item = new QStandardItem(QString::fromStdString(command_desc));
+
     QStandardItem* key_item = new QStandardItem(QString::fromStdString(command_key));
     key_item->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);
-    return (QList<QStandardItem*>() << name_item << key_item);
+    return (QList<QStandardItem*>() << name_item << desc_item << key_item);
 }
 
 QStandardItemModel* CommandSelector::get_standard_item_model(std::vector<std::string> command_names) {
@@ -1292,9 +1300,13 @@ void CommandSelector::on_select(const QModelIndex& index) {
     // when the command text is just a number, we handle it differently by jumping to the page number
     if (is_numeric && !index.isValid()){
         (*on_done)(line_edit->text().toStdString(), query);
+        return;
     }
 
-    QString name = standard_item_model->data(index).toString();
+    QString name = "";
+    if (index.isValid()) {
+        name = standard_item_model->item(index.row(), 0)->text();
+    }
     //hide();
     main_widget->pop_current_widget();
     parentWidget()->setFocus();
@@ -1349,7 +1361,8 @@ CommandSelector::CommandSelector(bool is_fuzzy, std::function<void(std::string, 
 
 
     table_view->horizontalHeader()->setStretchLastSection(true);
-    table_view->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    table_view->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    table_view->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     table_view->horizontalHeader()->hide();
     table_view->verticalHeader()->hide();
 
