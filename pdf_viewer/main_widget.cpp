@@ -1653,6 +1653,15 @@ std::wstring MainWidget::get_status_string(bool is_right) {
 
 void MainWidget::handle_escape() {
 
+    // topmost widget (e.g. command palette, table of contents) has the highest escape priority
+    if (current_widget_stack.size() > 0) {
+        pop_current_widget();
+        // return early if we just closed a widget, for example we don't want to lose the ruler position
+        validate_render();
+        setFocus();
+        return;
+    }
+
     // add high escape priority to overview and search, if any of them are escaped, do not escape any further
     if (opengl_widget) {
         bool should_return = false;
@@ -1694,16 +1703,6 @@ void MainWidget::handle_escape() {
     set_selected_bookmark_index(-1);
     selected_portal_index = -1;
     //current_pending_command = {};
-
-    bool had_widget = current_widget_stack.size() > 0;
-    pop_current_widget();
-    if (had_widget) {
-        // return early if we just closed a widget, for example we don't want to lose the ruler position
-        validate_render();
-        setFocus();
-        return;
-    }
-
 
     if (main_document_view) {
         main_document_view->handle_escape();
