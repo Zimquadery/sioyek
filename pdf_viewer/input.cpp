@@ -1515,6 +1515,7 @@ public:
         // this search is not incremental even if incremental search is activated
         // (for example it should update the search terms list)
         widget->perform_search(this->text.value(), false, false);
+        widget->goto_search_result(1);
         if (TOUCH_MODE) {
             widget->show_search_buttons();
         }
@@ -8261,6 +8262,7 @@ std::string InputHandler::get_key_name_from_key_code(int key_code) const {
         {Qt::Key::Key_End, "end"},
         {Qt::Key::Key_Tab, "tab"},
         {Qt::Key::Key_Backtab, "tab"},
+        {Qt::Key::Key_Return, "return"},
     };
 
     //if (((key_code <= 'z') && (key_code >= 'a')) || ((key_code <= 'Z') && (key_code >= 'A'))) {

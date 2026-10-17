@@ -1598,6 +1598,24 @@ std::wstring MainWidget::get_status_string(bool is_right) {
         status_string += " [ " + QString::fromStdWString(hl.text_annot) + " ]";
     }
 
+    if (status_string.indexOf("%{command_prompt_hint}") != -1) {
+        float search_progress;
+        bool is_idle = pending_command_instance == nullptr &&
+            !opengl_widget->get_is_searching(&search_progress) &&
+            custom_status_message.empty() && !portal_to_edit &&
+            !is_pending_link_source_filled() &&
+            !doc()->get_is_indexing();
+        QString command_prompt_hint;
+        if (is_idle) {
+            auto mappings = input_handler->get_command_key_mappings();
+            auto command_keys = mappings.find("command");
+            if (command_keys != mappings.end() && !command_keys->second.empty()) {
+                command_prompt_hint = QString::fromStdString(command_keys->second[0]) + " commands";
+            }
+        }
+        status_string.replace("%{command_prompt_hint}", command_prompt_hint);
+    }
+
     status_string.replace("%{current_page}", "");
     status_string.replace("%{num_pages}", "");
     status_string.replace("%{chapter_name}", "");
