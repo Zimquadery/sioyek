@@ -14,6 +14,7 @@
 #include <qquickwidget.h>
 #include <qjsondocument.h>
 #include <qmainwindow.h>
+#include <qelapsedtimer.h>
 
 #include "book.h"
 #include "input.h"
@@ -287,6 +288,11 @@ public:
     // `smooth_scroll_speed` is used to keep track of our speed in this mode
     bool smooth_scroll_mode = false;
     float smooth_scroll_speed = 0.0f;
+
+    // when smooth_wheel_scrolling is enabled, the remaining vertical screen pixels
+    // that the wheel scroll animation has left to apply
+    float smooth_wheel_remaining_y = 0.0f;
+    QElapsedTimer smooth_wheel_frame_timer;
 
     // the timer which periodically checks if the UI/rendering needs updating. Normally the timer value is
     // set to be INTERVAL_TIME (which is 200ms at the time of writing this comment), however, it is set to a much
@@ -597,7 +603,7 @@ public:
     std::optional<std::wstring> get_current_file_name();
     CommandManager* get_command_manager();
 
-    void move_vertical(float amount);
+    void move_vertical(float amount, bool animate);
     bool move_horizontal(float amount, bool force = false);
     void get_window_params_for_one_window_mode(int* main_window_size, int* main_window_move);
     void get_window_params_for_two_window_mode(int* main_window_size, int* main_window_move, int* helper_window_size, int* helper_window_move);

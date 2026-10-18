@@ -25,6 +25,7 @@
 #include <memory>
 #include <cctype>
 #include <cstdlib>
+#include <cmath>
 #include <qpainterpath.h>
 #include <qabstractitemmodel.h>
 #include <qapplication.h>
@@ -221,6 +222,7 @@ extern bool SHOW_COMMAND_HINTS;
 extern bool RESTORE_ALL_WINDOWS_ON_STARTUP;
 
 extern bool FREE_TOUCHPAD_MOVEMENT;
+extern bool SMOOTH_WHEEL_SCROLLING;
 extern bool SIMPLIFY_FREEHAND_DRAWINGS;
 extern bool SHOW_RIGHT_CLICK_CONTEXT_MENU;
 extern std::wstring CONTEXT_MENU_ITEMS;
@@ -1269,6 +1271,11 @@ MainWidget::MainWidget(fz_context* mupdf_context,
             validate_ui();
         }
 
+        if ((validation_interval_timer->interval() == 16) && (smooth_wheel_remaining_y == 0.0f) &&
+            (!is_moving()) && (!smooth_scroll_mode)) {
+            validation_interval_timer->setInterval(INTERVAL_TIME);
+        }
+
         if (QGuiApplication::mouseButtons() & Qt::MouseButton::MiddleButton) {
             if ((last_middle_down_time.msecsTo(QTime::currentTime()) > 200) && (!is_middle_click_being_used())) {
                 if ((!middle_click_hold_command_already_executed) && (!is_moving_annotations())) {
@@ -1697,6 +1704,7 @@ void MainWidget::handle_escape() {
     }
 
     smooth_y_move_amount = {};
+    smooth_wheel_remaining_y = 0.0f;
     hide_command_hints();
     clear_selection_indicators();
     typing_location = {};
@@ -1802,6 +1810,45 @@ void MainWidget::validate_render() {
             last_speed_update_time = QTime::currentTime();
         }
     }
+    if (smooth_wheel_remaining_y != 0.0f) {
+        // exponential approach towards the remaining scroll target: retargets are
+        // just additions to `smooth_wheel_remaining_y` and the ease-out curve is
+        // inherent in the remaining/tau ratio (tau = 0.05f, i.e. ~150ms settle)
+        // a stale or never-started frame clock contributes one nominal frame, so the
+        // first notch moves immediately instead of dead-timing until the next 16ms tick
+        float secs;
+        if (smooth_wheel_frame_timer.isValid()) {
+            secs = smooth_wheel_frame_timer.restart() / 1000.0f;
+            if (secs > 0.1f) {
+                secs = 0.016f;
+            }
+        }
+        else {
+            smooth_wheel_frame_timer.start();
+            secs = 0.016f;
+        }
+        float step = smooth_wheel_remaining_y * (1.0f - std::exp(-secs / 0.05f));
+        float max_step = SMOOTH_MOVE_MAX_VELOCITY * secs;
+        if (std::abs(step) > max_step) {
+            step = (step > 0.0f) ? max_step : -max_step;
+        }
+        float before_offset_y = dv()->get_offset_y();
+        dv()->move(0.0f, step);
+        float actual_step = (dv()->get_offset_y() - before_offset_y) * dv()->get_zoom_level();
+        // only a large mismatch is a real interruption (keyboard/goto/link jump, or a big
+        // step slamming into a document end); small drift comes from page-boundary and
+        // zoom re-centering scale changes and must not cancel the animation mid-glide
+        if (std::abs(actual_step - step) > 32.0f) {
+            smooth_wheel_remaining_y = 0.0f;
+        }
+        else {
+            smooth_wheel_remaining_y -= step;
+            if (std::abs(smooth_wheel_remaining_y) < 0.5f) {
+                smooth_wheel_remaining_y = 0.0f;
+            }
+            update_scrollbar();
+        }
+    }
     if (is_moving()) {
         auto current_time = QTime::currentTime();
         float secs = current_time.msecsTo(last_speed_update_time) / 1000.0f;
@@ -1839,7 +1886,7 @@ void MainWidget::validate_render() {
             }
         }
 
-        if (!is_moving()) {
+        if ((!is_moving()) && (smooth_wheel_remaining_y == 0.0f)) {
             validation_interval_timer->setInterval(INTERVAL_TIME);
         }
         last_speed_update_time = current_time;
@@ -1906,6 +1953,9 @@ void MainWidget::validate_render() {
 
     is_render_invalidated = false;
     if (smooth_scroll_mode && (smooth_scroll_speed != 0)) {
+        is_render_invalidated = true;
+    }
+    if (smooth_wheel_remaining_y != 0.0f) {
         is_render_invalidated = true;
     }
     if (is_moving()) {
@@ -3440,6 +3490,8 @@ void MainWidget::wheelEvent(QWheelEvent* wevent) {
     }
 
     bool is_touchpad = wevent->pointingDevice()->pointerType() == QPointingDevice::PointerType::Finger;
+    // touchpads and other precise devices already deliver smooth deltas: scroll them directly
+    bool is_precise_scrolling = is_touchpad || (!wevent->pixelDelta().isNull());
 
     if (is_right_click_held_down){
         if (wevent->angleDelta().y() > 0 && RIGHT_CLICK_SCROLL_UP_COMMAND.size() > 0) {
@@ -3486,10 +3538,10 @@ void MainWidget::wheelEvent(QWheelEvent* wevent) {
             else {
                 if (ALLOW_MAIN_VIEW_SCROLL_WHILE_IN_OVERVIEW) {
                     if (wevent->angleDelta().y() > 0) {
-                        move_vertical(-72.0f * vertical_move_amount * num_repeats_f_y);
+                        move_vertical(-72.0f * vertical_move_amount * num_repeats_f_y, !is_precise_scrolling);
                     }
                     else {
-                        move_vertical(72.0f * vertical_move_amount * num_repeats_f_y);
+                        move_vertical(72.0f * vertical_move_amount * num_repeats_f_y, !is_precise_scrolling);
                     }
                     update_scrollbar();
                 }
@@ -3528,7 +3580,7 @@ void MainWidget::wheelEvent(QWheelEvent* wevent) {
                     invalidate_render();
                 }
                 else {
-                    move_vertical(-72.0f * vertical_move_amount * num_repeats_f_y);
+                    move_vertical(-72.0f * vertical_move_amount * num_repeats_f_y, !is_precise_scrolling);
                     update_scrollbar();
                     // return;
                 }
@@ -3554,7 +3606,7 @@ void MainWidget::wheelEvent(QWheelEvent* wevent) {
                     invalidate_render();
                 }
                 else {
-                    move_vertical(72.0f * vertical_move_amount * num_repeats_f_y);
+                    move_vertical(72.0f * vertical_move_amount * num_repeats_f_y, !is_precise_scrolling);
                     update_scrollbar();
                     // return;
                 }
@@ -4328,18 +4380,28 @@ void MainWidget::handle_search_paper_name(std::wstring paper_name, bool is_shift
     }
 
 }
-void MainWidget::move_vertical(float amount) {
+void MainWidget::move_vertical(float amount, bool animate) {
     if (opengl_widget->on_vertical_scroll()){
         // hide the link/text labels when we move
         hide_command_line_edit();
     }
 
-    if (!smooth_scroll_mode) {
-        move_document(0, amount);
+    if (smooth_scroll_mode) {
+        smooth_scroll_speed += amount * SMOOTH_SCROLL_SPEED;
+        validate_render();
+    }
+    else if (animate && SMOOTH_WHEEL_SCROLLING) {
+        smooth_wheel_remaining_y += amount;
+        // bound the banked fling distance: a fast spin must not sail past the
+        // target, so the animation target is capped at 3/4 of a screen
+        float max_remaining = 0.75f * static_cast<float>(dv()->get_view_height());
+        smooth_wheel_remaining_y = std::clamp(smooth_wheel_remaining_y, -max_remaining, max_remaining);
+        validation_interval_timer->setInterval(16);
+        is_render_invalidated = true;
         validate_render();
     }
     else {
-        smooth_scroll_speed += amount * SMOOTH_SCROLL_SPEED;
+        move_document(0, amount);
         validate_render();
     }
 }

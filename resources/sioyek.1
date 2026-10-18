@@ -1128,6 +1128,13 @@ If not set, then use (first screen width/2, 0) if there is only one monitor, and
 
 Touchpad sensitivity.
 .HP
+.B smooth_wheel_scrolling
+.I boolean
+
+If set to 1, mouse wheel scrolling is animated with a short ease-out
+animation instead of jumping discretely to the target. Precise devices
+(e.g. touchpads) are always scrolled directly. Disabled by default.
+.HP
 .B page_separator_width
 .I float
 
