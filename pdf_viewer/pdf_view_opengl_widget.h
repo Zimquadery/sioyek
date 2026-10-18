@@ -271,9 +271,9 @@ public:
     void draw_empty_helper_message(QPainter* painter, QString message);
     NormalizedWindowRect get_overview_rect();
     NormalizedWindowRect get_overview_rect_pixel_perfect(int widget_width, int widget_height, int view_width, int view_height);
-    std::vector<NormalizedWindowRect> get_overview_border_rects();
+    std::vector<NormalizedWindowRect> get_overview_border_rects(float border_thickness = 0.05f);
     bool is_window_point_in_overview(NormalizedWindowPos window_point);
-    bool is_window_point_in_overview_border(NormalizedWindowPos window_point, OverviewSide* which_border);
+    bool is_window_point_in_overview_border(NormalizedWindowPos window_point, OverviewSide* which_border, float border_thickness = 0.05f);
     Document* doc(bool overview=false);
 
     void get_overview_offsets(float* offset_x, float* offset_y);

@@ -2217,7 +2217,7 @@ NormalizedWindowRect	PdfViewOpenGLWidget::get_overview_rect_pixel_perfect(int wi
     return res;
 }
 
-std::vector<NormalizedWindowRect> PdfViewOpenGLWidget::get_overview_border_rects() {
+std::vector<NormalizedWindowRect> PdfViewOpenGLWidget::get_overview_border_rects(float border_thickness) {
     std::vector<NormalizedWindowRect> res;
 
     NormalizedWindowRect bottom_rect;
@@ -2226,23 +2226,23 @@ std::vector<NormalizedWindowRect> PdfViewOpenGLWidget::get_overview_border_rects
     NormalizedWindowRect right_rect;
 
     bottom_rect.x0 = overview_offset_x - overview_half_width;
-    bottom_rect.y0 = overview_offset_y - overview_half_height - 0.05f;
+    bottom_rect.y0 = overview_offset_y - overview_half_height - border_thickness;
     bottom_rect.x1 = overview_offset_x + overview_half_width;
-    bottom_rect.y1 = overview_offset_y - overview_half_height + 0.05f;
+    bottom_rect.y1 = overview_offset_y - overview_half_height + border_thickness;
 
     top_rect.x0 = overview_offset_x - overview_half_width;
-    top_rect.y0 = overview_offset_y + overview_half_height - 0.05f;
+    top_rect.y0 = overview_offset_y + overview_half_height - border_thickness;
     top_rect.x1 = overview_offset_x + overview_half_width;
-    top_rect.y1 = overview_offset_y + overview_half_height + 0.05f;
+    top_rect.y1 = overview_offset_y + overview_half_height + border_thickness;
 
-    left_rect.x0 = overview_offset_x - overview_half_width - 0.05f;
+    left_rect.x0 = overview_offset_x - overview_half_width - border_thickness;
     left_rect.y0 = overview_offset_y - overview_half_height;
-    left_rect.x1 = overview_offset_x - overview_half_width + 0.05f;
+    left_rect.x1 = overview_offset_x - overview_half_width + border_thickness;
     left_rect.y1 = overview_offset_y + overview_half_height;
 
-    right_rect.x0 = overview_offset_x + overview_half_width - 0.05f;
+    right_rect.x0 = overview_offset_x + overview_half_width - border_thickness;
     right_rect.y0 = overview_offset_y - overview_half_height;
-    right_rect.x1 = overview_offset_x + overview_half_width + 0.05f;
+    right_rect.x1 = overview_offset_x + overview_half_width + border_thickness;
     right_rect.y1 = overview_offset_y + overview_half_height;
 
     res.push_back(bottom_rect);
@@ -2261,13 +2261,13 @@ bool PdfViewOpenGLWidget::is_window_point_in_overview(NormalizedWindowPos window
     return false;
 }
 
-bool PdfViewOpenGLWidget::is_window_point_in_overview_border(NormalizedWindowPos window_point, OverviewSide* which_border) {
+bool PdfViewOpenGLWidget::is_window_point_in_overview_border(NormalizedWindowPos window_point, OverviewSide* which_border, float border_thickness) {
 
     if (!get_overview_page().has_value()) {
         return false;
     }
 
-    std::vector<NormalizedWindowRect> rects = get_overview_border_rects();
+    std::vector<NormalizedWindowRect> rects = get_overview_border_rects(border_thickness);
     for (size_t i = 0; i < rects.size(); i++) {
         if (rects[i].contains(window_point)) {
             *which_border = static_cast<OverviewSide>(i);

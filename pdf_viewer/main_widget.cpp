@@ -762,6 +762,17 @@ void MainWidget::mouseMoveEvent(QMouseEvent* mouse_event) {
     }
 
     if (!is_scratchpad_mode()){
+        OverviewSide overview_border_side = static_cast<OverviewSide>(-1);
+        if (opengl_widget->is_window_point_in_overview_border(normal_mpos, &overview_border_side, 0.01f)) {
+            if ((overview_border_side == left) || (overview_border_side == right)) {
+                setCursor(Qt::SizeHorCursor);
+            }
+            else {
+                setCursor(Qt::SizeVerCursor);
+            }
+            return;
+        }
+
         if (opengl_widget->is_window_point_in_overview(normal_mpos)) {
             link = doc()->get_link_in_pos(opengl_widget->window_pos_to_overview_pos(normal_mpos));
             if (link) {
