@@ -228,6 +228,7 @@ bool HIGHLIGHT_MIDDLE_CLICK = false;
 float HYPERDRIVE_SPEED_FACTOR = 10.0f;
 float SMOOTH_SCROLL_SPEED = 3.0f;
 float SMOOTH_SCROLL_DRAG = 3000.0f;
+bool SMOOTH_WHEEL_SCROLLING = false;
 int PRERENDERED_PAGE_COUNT = 0;
 bool SHOW_RIGHT_CLICK_CONTEXT_MENU = true;
 bool ALLOW_MAIN_VIEW_SCROLL_WHILE_IN_OVERVIEW = false;
@@ -1054,6 +1055,7 @@ ConfigManager::ConfigManager(const Path& default_path, const Path& auto_path, co
     add_bool(L"restore_all_windows_on_startup", &RESTORE_ALL_WINDOWS_ON_STARTUP);
     add_bool(L"disable_cursor_blinking", &DISABLE_CURSOR_BLINKING);
     add_bool(L"free_touchpad_movement", &FREE_TOUCHPAD_MOVEMENT);
+    add_bool(L"smooth_wheel_scrolling", &SMOOTH_WHEEL_SCROLLING);
 
     add_string(L"google_scholar_address", &GOOGLE_SCHOLAR_ADDRESS);
     add_string(L"item_list_prefix", &ITEM_LIST_PREFIX);

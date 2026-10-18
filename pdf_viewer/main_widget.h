@@ -291,6 +291,11 @@ public:
     // Keep smooth scrolling independent of wall-clock changes and touch movement timing.
     QElapsedTimer smooth_scroll_timer;
 
+    // when smooth_wheel_scrolling is enabled, the remaining vertical screen pixels
+    // that the wheel scroll animation has left to apply
+    float smooth_wheel_remaining_y = 0.0f;
+    QElapsedTimer smooth_wheel_frame_timer;
+
     // the timer which periodically checks if the UI/rendering needs updating. Normally the timer value is
     // set to be INTERVAL_TIME (which is 200ms at the time of writing this comment), however, it is set to a much
     // lower value when in smooth scroll mode or when user flicks a document in touch mode
@@ -600,7 +605,7 @@ public:
     std::optional<std::wstring> get_current_file_name();
     CommandManager* get_command_manager();
 
-    void move_vertical(float amount);
+    void move_vertical(float amount, bool animate);
     bool move_horizontal(float amount, bool force = false);
     void get_window_params_for_one_window_mode(int* main_window_size, int* main_window_move);
     void get_window_params_for_two_window_mode(int* main_window_size, int* main_window_move, int* helper_window_size, int* helper_window_move);
