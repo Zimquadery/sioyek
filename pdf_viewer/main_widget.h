@@ -402,6 +402,10 @@ public:
     std::optional<OverviewTouchMoveData> overview_touch_move_data = {};
     std::optional<OverviewResizeData> overview_resize_data = {};
 
+    // set when the overview close button closes the overview on mouse press;
+    // the paired mouse release is swallowed so it doesn't leak into handle_click
+    bool overview_close_button_release_pending = false;
+
     std::vector<PendingDownloadPortal> pending_download_portals;
 
     // A list of candiadates to be shown in the overview window. We use simple heuristics to determine the

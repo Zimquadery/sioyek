@@ -1946,6 +1946,10 @@ void PdfViewOpenGLWidget::my_render(QPainter* painter) {
     }
     painter->endNativePainting();
 
+    if (overview_page && overview_close_button_visible) {
+        render_overview_close_button(painter);
+    }
+
 }
 
 bool PdfViewOpenGLWidget::get_is_searching(float* prog) {
@@ -2169,6 +2173,9 @@ void PdfViewOpenGLWidget::set_overview_page(std::optional<OverviewState> overvie
     }
 
     this->overview_page = overview;
+    if (!overview.has_value()) {
+        overview_close_button_visible = false;
+    }
 }
 
 std::optional<OverviewState> PdfViewOpenGLWidget::get_overview_page() {
@@ -2275,6 +2282,52 @@ bool PdfViewOpenGLWidget::is_window_point_in_overview_border(NormalizedWindowPos
         }
     }
     return false;
+}
+
+bool PdfViewOpenGLWidget::set_overview_close_button_visible(bool visible) {
+    if (visible == overview_close_button_visible) {
+        return false;
+    }
+    overview_close_button_visible = visible;
+    return true;
+}
+
+void PdfViewOpenGLWidget::get_overview_close_button_center(float* center_x, float* center_y) {
+    // 13 pixels inset from the top-right corner of the overview rect; view dimensions are
+    // the scale of the normalized coordinate space (same as render_overview's pixel mapping)
+    NormalizedWindowRect rect = get_overview_rect();
+    const float inset_x = 13.0f * 2.0f / static_cast<float>(document_view->get_view_width());
+    const float inset_y = 13.0f * 2.0f / static_cast<float>(document_view->get_view_height());
+    *center_x = rect.x1 - inset_x;
+    *center_y = rect.y1 - inset_y;
+}
+
+bool PdfViewOpenGLWidget::is_window_point_in_overview_close_button(NormalizedWindowPos window_point) {
+    if (!get_overview_page().has_value() || !overview_close_button_visible) {
+        return false;
+    }
+
+    float center_x, center_y;
+    get_overview_close_button_center(&center_x, &center_y);
+    const float half_size_x = 12.0f * 2.0f / static_cast<float>(document_view->get_view_width());
+    const float half_size_y = 12.0f * 2.0f / static_cast<float>(document_view->get_view_height());
+
+    return (fabs(window_point.x - center_x) < half_size_x) &&
+        (fabs(window_point.y - center_y) < half_size_y) &&
+        is_window_point_in_overview(window_point);
+}
+
+void PdfViewOpenGLWidget::render_overview_close_button(QPainter* painter) {
+    float center_x, center_y;
+    get_overview_close_button_center(&center_x, &center_y);
+    const float center_x_px = ((center_x + 1.0f) / 2.0f) * static_cast<float>(document_view->get_view_width());
+    const float center_y_px = ((1.0f - center_y) / 2.0f) * static_cast<float>(document_view->get_view_height());
+
+    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setPen(QPen(QColor(128, 128, 128), 1.5f));
+
+    painter->drawLine(QPointF(center_x_px - 5.0f, center_y_px - 5.0f), QPointF(center_x_px + 5.0f, center_y_px + 5.0f));
+    painter->drawLine(QPointF(center_x_px - 5.0f, center_y_px + 5.0f), QPointF(center_x_px + 5.0f, center_y_px - 5.0f));
 }
 
 void PdfViewOpenGLWidget::get_overview_offsets(float* offset_x, float* offset_y) {

@@ -171,6 +171,8 @@ private:
     float overview_offset_x = 0.0f;
     float overview_offset_y = 0.0f;
 
+    bool overview_close_button_visible = false;
+
     std::optional<AbsoluteRect> selected_rectangle = {};
 
     GLuint LoadShaders(Path vertex_file_path_, Path fragment_file_path_);
@@ -274,6 +276,10 @@ public:
     std::vector<NormalizedWindowRect> get_overview_border_rects(float border_thickness = 0.05f);
     bool is_window_point_in_overview(NormalizedWindowPos window_point);
     bool is_window_point_in_overview_border(NormalizedWindowPos window_point, OverviewSide* which_border, float border_thickness = 0.05f);
+    bool set_overview_close_button_visible(bool visible);
+    void get_overview_close_button_center(float* center_x, float* center_y);
+    bool is_window_point_in_overview_close_button(NormalizedWindowPos window_point);
+    void render_overview_close_button(QPainter* painter);
     Document* doc(bool overview=false);
 
     void get_overview_offsets(float* offset_x, float* offset_y);

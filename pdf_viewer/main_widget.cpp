@@ -764,6 +764,18 @@ void MainWidget::mouseMoveEvent(QMouseEvent* mouse_event) {
     }
 
     if (!is_scratchpad_mode()){
+        if (opengl_widget->get_overview_page()) {
+            bool close_button_visible = opengl_widget->is_window_point_in_overview(normal_mpos);
+            if (opengl_widget->set_overview_close_button_visible(close_button_visible)) {
+                validate_render();
+            }
+        }
+
+        if (opengl_widget->is_window_point_in_overview_close_button(normal_mpos)) {
+            setCursor(Qt::PointingHandCursor);
+            return;
+        }
+
         OverviewSide overview_border_side = static_cast<OverviewSide>(-1);
         if (opengl_widget->is_window_point_in_overview_border(normal_mpos, &overview_border_side, 0.01f)) {
             if ((overview_border_side == left) || (overview_border_side == right)) {
@@ -2754,6 +2766,15 @@ void MainWidget::handle_left_click(WindowPos click_pos, bool down, bool is_shift
 
     if (down == true) {
 
+        if (opengl_widget->is_window_point_in_overview_close_button(click_normalized_window_pos)) {
+            set_overview_page({});
+            // the mouse release of this press must not leak into handle_click and
+            // activate whatever is under the button in the main document
+            overview_close_button_release_pending = true;
+            invalidate_render();
+            return;
+        }
+
         OverviewSide border_index = static_cast<OverviewSide>(-1);
         if (opengl_widget->is_window_point_in_overview_border(click_normalized_window_pos, &border_index)) {
             OverviewResizeData resize_data;
@@ -2814,6 +2835,11 @@ void MainWidget::handle_left_click(WindowPos click_pos, bool down, bool is_shift
         }
     }
     else {
+        if (overview_close_button_release_pending) {
+            overview_close_button_release_pending = false;
+            return;
+        }
+
         selection_end = abs_doc_pos;
 
         is_selecting = false;
