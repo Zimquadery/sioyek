@@ -229,7 +229,7 @@ extern std::wstring CONTEXT_MENU_ITEMS_FOR_LINKS;
 extern std::wstring CONTEXT_MENU_ITEMS_FOR_HIGHLIGHTS;
 extern std::wstring CONTEXT_MENU_ITEMS_FOR_BOOKMARKS;
 extern std::wstring CONTEXT_MENU_ITEMS_FOR_OVERVIEW;
-extern bool RIGHT_CLICK_CONTEXT_MENU;
+extern std::wstring CONTEXT_MENU_ITEMS_FOR_EMPTY_AREA;
 extern float SMOOTH_MOVE_MAX_VELOCITY;
 extern float PERSISTANCE_PERIOD;
 
@@ -2519,7 +2519,12 @@ void MainWidget::handle_right_click(WindowPos click_pos, bool down, bool is_shif
                 }
             }
 
-            visual_mark_under_pos(click_pos);
+            if (SHOW_RIGHT_CLICK_CONTEXT_MENU && (CONTEXT_MENU_ITEMS_FOR_EMPTY_AREA.size() > 0)) {
+                show_context_menu(QString::fromStdWString(CONTEXT_MENU_ITEMS_FOR_EMPTY_AREA));
+            }
+            else {
+                visual_mark_under_pos(click_pos);
+            }
 
         }
         else {

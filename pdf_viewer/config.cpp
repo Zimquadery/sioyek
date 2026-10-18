@@ -229,16 +229,15 @@ float HYPERDRIVE_SPEED_FACTOR = 10.0f;
 float SMOOTH_SCROLL_SPEED = 3.0f;
 float SMOOTH_SCROLL_DRAG = 3000.0f;
 int PRERENDERED_PAGE_COUNT = 0;
-bool SHOW_RIGHT_CLICK_CONTEXT_MENU = false;
+bool SHOW_RIGHT_CLICK_CONTEXT_MENU = true;
 bool ALLOW_MAIN_VIEW_SCROLL_WHILE_IN_OVERVIEW = false;
 std::wstring CONTEXT_MENU_ITEMS = L"";
-std::wstring CONTEXT_MENU_ITEMS_FOR_SELECTED_TEXT = L"copy|add_highlight(a)|add_highlight(b)|add_highlight(c)";
+std::wstring CONTEXT_MENU_ITEMS_FOR_SELECTED_TEXT = L"copy|Google Scholar::search_google_scholar|Google::search_google|add_highlight(a)|add_highlight(b)|add_highlight(c)";
 std::wstring CONTEXT_MENU_ITEMS_FOR_LINKS = L"";
 std::wstring CONTEXT_MENU_ITEMS_FOR_HIGHLIGHTS = L"delete_highlight|edit_selected_annotation|add_highlight(a)|add_highlight(b)|add_highlight(c)";
 std::wstring CONTEXT_MENU_ITEMS_FOR_BOOKMARKS = L"delete_visible_annotation|edit_selected_annotation|move_selected_bookmark";
 std::wstring CONTEXT_MENU_ITEMS_FOR_OVERVIEW = L"";
-
-bool RIGHT_CLICK_CONTEXT_MENU = false;
+std::wstring CONTEXT_MENU_ITEMS_FOR_EMPTY_AREA = L"Visual mark::visual_mark_under_cursor|Fullscreen::toggle_fullscreen|Fit width::fit_to_page_width|Dark mode::toggle_dark_mode|Table of contents::goto_toc|Google Scholar::search_google_scholar|Google::search_google";
 #ifdef SIOYEK_MOBILE
 int NUM_CACHED_PAGES = 3;
 #else
@@ -1015,7 +1014,6 @@ ConfigManager::ConfigManager(const Path& default_path, const Path& auto_path, co
     add_bool(L"should_warn_about_user_key_override", &SHOULD_WARN_ABOUT_USER_KEY_OVERRIDE);
     add_bool(L"single_click_selects_words", &SINGLE_CLICK_SELECTS_WORDS);
     add_bool(L"allow_horizontal_drag_when_document_is_small", &ALLOW_HORIZONTAL_DRAG_WHEN_DOCUMENT_IS_SMALL);
-    add_bool(L"right_click_context_menu", &RIGHT_CLICK_CONTEXT_MENU);
     add_bool(L"use_legacy_keybinds", &USE_LEGACY_KEYBINDS);
     add_bool(L"multiline_menus", &MULTILINE_MENUS);
     add_bool(L"start_with_helper_window", &START_WITH_HELPER_WINDOW);
@@ -1077,6 +1075,7 @@ ConfigManager::ConfigManager(const Path& default_path, const Path& auto_path, co
     add_string(L"context_menu_items_for_highlights", &CONTEXT_MENU_ITEMS_FOR_HIGHLIGHTS);
     add_string(L"context_menu_items_for_bookmarks", &CONTEXT_MENU_ITEMS_FOR_BOOKMARKS);
     add_string(L"context_menu_items_for_overview", &CONTEXT_MENU_ITEMS_FOR_OVERVIEW);
+    add_string(L"context_menu_items_for_empty_area", &CONTEXT_MENU_ITEMS_FOR_EMPTY_AREA);
     add_string(L"paper_download_url_path", &PAPER_SEARCH_URL_PATH);
     add_string(L"paper_download_title_path", &PAPER_SEARCH_TILE_PATH);
     add_string(L"paper_download_contrib_path", &PAPER_SEARCH_CONTRIB_PATH);

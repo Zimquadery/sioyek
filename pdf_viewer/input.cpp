@@ -4526,6 +4526,34 @@ public:
 
 };
 
+class SearchGoogleScholarCommand : public Command {
+public:
+    static inline const std::string cname = "search_google_scholar";
+    static inline const std::string hname = "Search Google Scholar";
+    SearchGoogleScholarCommand(MainWidget* w) : Command(cname, w) {};
+    void perform() {
+        std::wstring query = widget->get_selected_text();
+        if (query.size() == 0) {
+            query = widget->doc()->detect_paper_name();
+        }
+        search_custom_engine(query, L"https://scholar.google.com/scholar?&q=");
+    }
+};
+
+class SearchGoogleCommand : public Command {
+public:
+    static inline const std::string cname = "search_google";
+    static inline const std::string hname = "Search Google";
+    SearchGoogleCommand(MainWidget* w) : Command(cname, w) {};
+    void perform() {
+        std::wstring query = widget->get_selected_text();
+        if (query.size() == 0) {
+            query = widget->doc()->detect_paper_name();
+        }
+        search_custom_engine(query, L"https://www.google.com/search?q=");
+    }
+};
+
 class OpenSelectedUrlCommand : public Command {
 public:
     static inline const std::string cname = "open_selected_url";
@@ -4617,6 +4645,17 @@ std::unique_ptr<MenuItems> parse_menu_string(MainWidget* widget, QString name, Q
     std::unique_ptr<MenuItems> res = std::make_unique<MenuItems>();
     res->name = name.toStdWString();
     while (true) {
+        // an optional "Label::" prefix overrides the item's display name
+        std::string label;
+        for (int i = parser.index; i < parser.str.size(); i++) {
+            QChar c = parser.str[i];
+            if (c == '(' || c == '|' || c == ';') break;
+            if (c == ':' && i + 1 < parser.str.size() && parser.str[i + 1] == ':') {
+                label = parser.str.mid(parser.index, i - parser.index).trimmed().toStdString();
+                parser.index = i + 2;
+                break;
+            }
+        }
         std::vector<CommandInvocation> invocations = parser.parse_next_macro_command();
 
         if (invocations.size() == 1 && invocations[0].command_name == "show_custom_context_menu") {
@@ -4626,7 +4665,7 @@ std::unique_ptr<MenuItems> parse_menu_string(MainWidget* widget, QString name, Q
             }
         }
         else {
-            res->items.push_back(std::make_unique<MacroCommand>(widget, widget->command_manager, "", invocations));
+            res->items.push_back(std::make_unique<MacroCommand>(widget, widget->command_manager, label, invocations));
         }
         if (parser.eof()) break;
 
@@ -7339,6 +7378,8 @@ CommandManager::CommandManager(ConfigManager* config_manager) {
     register_command<CommandCommand>();
     register_command<CommandPaletteCommand>();
     register_command<ExternalSearchCommand>();
+    register_command<SearchGoogleScholarCommand>();
+    register_command<SearchGoogleCommand>();
     register_command<OpenSelectedUrlCommand>();
     register_command<ScreenDownCommand>();
     register_command<ScreenUpCommand>();
