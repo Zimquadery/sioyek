@@ -292,8 +292,11 @@ public:
     QElapsedTimer smooth_scroll_timer;
 
     // when smooth_wheel_scrolling is enabled, the remaining vertical screen pixels
-    // that the wheel scroll animation has left to apply
+    // that the wheel scroll animation has left to apply, and the glide's fixed
+    // time constant (set from the banked distance on every notch, held during the
+    // drain so the velocity remaining/tau decays monotonically)
     float smooth_wheel_remaining_y = 0.0f;
+    float smooth_wheel_tau = 0.05f;
     QElapsedTimer smooth_wheel_frame_timer;
 
     // the timer which periodically checks if the UI/rendering needs updating. Normally the timer value is
@@ -610,6 +613,8 @@ public:
     CommandManager* get_command_manager();
 
     void move_vertical(float amount, bool animate);
+    void advance_wheel_fling();
+    void update_fling_prefetch();
     bool move_horizontal(float amount, bool force = false);
     void get_window_params_for_one_window_mode(int* main_window_size, int* main_window_move);
     void get_window_params_for_two_window_mode(int* main_window_size, int* main_window_move, int* helper_window_size, int* helper_window_move);

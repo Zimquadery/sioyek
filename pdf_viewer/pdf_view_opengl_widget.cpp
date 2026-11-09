@@ -37,6 +37,7 @@ extern float SCROLL_ZOOM_INC_FACTOR;
 extern float VERTICAL_MOVE_AMOUNT;
 extern float HIGHLIGHT_COLORS[26 * 3];
 extern bool SHOULD_DRAW_UNRENDERED_PAGES;
+extern bool LINEAR_TEXTURE_FILTERING;
 extern float CUSTOM_BACKGROUND_COLOR[3];
 extern float CUSTOM_TEXT_COLOR[3];
 extern bool RERENDER_OVERVIEW;
@@ -1052,12 +1053,20 @@ void PdfViewOpenGLWidget::render_page(int page_number, bool in_overview, ColorPa
             document_to_overview_rect(DocumentRect(slice_document_rect, page_number)) :
             DocumentRect(slice_document_rect, page_number).to_window_normalized(document_view);
 
-        // we add some slack so we pre-render nearby slices
+        // we add some slack so we pre-render nearby slices; an active wheel fling
+        // extends the slack towards its target so slices are already crisp when the
+        // animation reaches them (scrolling down = the negative-normalized-y edge)
         NormalizedWindowRect full_window_rect;
         full_window_rect.x0 = -1;
         full_window_rect.x1 = 1;
         full_window_rect.y0 = -1.5f;
         full_window_rect.y1 = 1.5f;
+        if (fling_prefetch > 0.0f) {
+            full_window_rect.y0 -= fling_prefetch;
+        }
+        else {
+            full_window_rect.y1 += -fling_prefetch;
+        }
 
         // don't render invisible slices
         if (is_sliced && (!rects_intersect(slice_window_rect, full_window_rect))) {
@@ -1187,20 +1196,34 @@ void PdfViewOpenGLWidget::render_page(int page_number, bool in_overview, ColorPa
             is_not_exact = false;
         }
 
-        NormalizedWindowRect window_rect = in_overview ? 
-            document_to_overview_rect(DocumentRect(page_rect, page_number)) :
-            document_view->document_to_window_rect_pixel_perfect(DocumentRect(page_rect, page_number),
-            static_cast<int>(rendered_width / device_pixel_ratio),
-            static_cast<int>(rendered_height / device_pixel_ratio), is_sliced);
+        NormalizedWindowRect window_rect;
+        if (in_overview) {
+            window_rect = document_to_overview_rect(DocumentRect(page_rect, page_number));
+        }
+        else if (smooth_page_positions) {
+            window_rect = DocumentRect(page_rect, page_number).to_window_normalized(document_view);
+        }
+        else {
+            window_rect = document_view->document_to_window_rect_pixel_perfect(DocumentRect(page_rect, page_number),
+                static_cast<int>(rendered_width / device_pixel_ratio),
+                static_cast<int>(rendered_height / device_pixel_ratio), is_sliced);
+        }
 
         rect_to_quad(window_rect, page_vertices);
 
         if (texture != 0) {
             bind_program(forced_color_palette);
             glBindTexture(GL_TEXTURE_2D, texture);
+            if (!LINEAR_TEXTURE_FILTERING) {
+                // subpixel texture sampling shimmers with NEAREST; sample linearly
+                // while the view is moving and restore the crisp filter at rest
+                GLenum filter = smooth_page_positions ? GL_LINEAR : GL_NEAREST;
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+            }
         }
         else {
-            if (!SHOULD_DRAW_UNRENDERED_PAGES) {
+            if (!SHOULD_DRAW_UNRENDERED_PAGES && (fling_prefetch == 0.0f)) {
                 continue;
             }
             float white[3] = {1, 1, 1};
@@ -1314,6 +1337,15 @@ void PdfViewOpenGLWidget::render_page(int page_number, bool in_overview, ColorPa
 }
 
 void PdfViewOpenGLWidget::my_render(QPainter* painter) {
+
+    if (on_before_render) {
+        on_before_render();
+    }
+
+    smooth_page_positions = (document_view->get_offset_x() != last_rendered_offset_x) ||
+        (document_view->get_offset_y() != last_rendered_offset_y);
+    last_rendered_offset_x = document_view->get_offset_x();
+    last_rendered_offset_y = document_view->get_offset_y();
 
     //if (true) {
     //    painter->beginNativePainting();

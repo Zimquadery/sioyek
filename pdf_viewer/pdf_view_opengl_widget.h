@@ -6,6 +6,7 @@
 #include <optional>
 #include <utility>
 #include <array>
+#include <functional>
 
 //#include <qopenglfunctions_3_1.h>
 #include <qopenglwidget.h>
@@ -175,6 +176,13 @@ private:
 
     std::optional<AbsoluteRect> selected_rectangle = {};
 
+    // view-motion detection: fractional page positions and linear filtering are used
+    // only while the document offset changes between paints; a view at rest keeps
+    // the pixel-perfect (integer-snapped) path
+    float last_rendered_offset_x = 0.0f;
+    float last_rendered_offset_y = 0.0f;
+    bool smooth_page_positions = false;
+
     GLuint LoadShaders(Path vertex_file_path_, Path fragment_file_path_);
 protected:
     void initializeGL() override;
@@ -203,6 +211,13 @@ protected:
 
 public:
     bool is_helper_waiting_for_render = false;
+    // set by MainWidget while a wheel fling is in flight: signed prefetch distance in
+    // normalized window units (viewport height = 2) towards the fling target
+    // (positive = scrolling down); zero when no fling is active
+    float fling_prefetch = 0.0f;
+    // runs at the start of every GL paint; MainWidget advances its wheel fling
+    // animation here so stepping is locked to actual rendered frames
+    std::function<void()> on_before_render;
     std::optional<QImage> cached_framebuffer;
     int last_cache_num_drawings = -1;
     float last_cache_offset_x = -1;

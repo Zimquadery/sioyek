@@ -967,6 +967,11 @@ MainWidget::MainWidget(fz_context* mupdf_context,
 
     main_document_view = new DocumentView(db_manager, document_manager, checksummer);
     opengl_widget = new PdfViewOpenGLWidget(main_document_view, pdf_renderer, config_manager, false, this);
+    // the wheel fling advances at the start of every GL paint (stepping locked to
+    // rendered frames); frameSwapped-based pacing was tried but the update() re-arm
+    // issued during compositing proved unreliable — the paint stream during a fling
+    // is sustained by the 16ms validation timer instead
+    opengl_widget->on_before_render = [this]() { advance_wheel_fling(); };
 
     QFont label_font = QFont(get_status_font_face_name());
     label_font.setStyleHint(QFont::TypeWriter);
@@ -1818,45 +1823,6 @@ void MainWidget::validate_render() {
                 smooth_scroll_speed += secs * accel;
                 if (smooth_scroll_speed > 0) smooth_scroll_speed = 0;
             }
-        }
-    }
-    if (smooth_wheel_remaining_y != 0.0f) {
-        // exponential approach towards the remaining scroll target: retargets are
-        // just additions to `smooth_wheel_remaining_y` and the ease-out curve is
-        // inherent in the remaining/tau ratio (tau = 0.05f, i.e. ~150ms settle)
-        // a stale or never-started frame clock contributes one nominal frame, so the
-        // first notch moves immediately instead of dead-timing until the next 16ms tick
-        float secs;
-        if (smooth_wheel_frame_timer.isValid()) {
-            secs = smooth_wheel_frame_timer.restart() / 1000.0f;
-            if (secs > 0.1f) {
-                secs = 0.016f;
-            }
-        }
-        else {
-            smooth_wheel_frame_timer.start();
-            secs = 0.016f;
-        }
-        float step = smooth_wheel_remaining_y * (1.0f - std::exp(-secs / 0.05f));
-        float max_step = SMOOTH_MOVE_MAX_VELOCITY * secs;
-        if (std::abs(step) > max_step) {
-            step = (step > 0.0f) ? max_step : -max_step;
-        }
-        float before_offset_y = dv()->get_offset_y();
-        dv()->move(0.0f, step);
-        float actual_step = (dv()->get_offset_y() - before_offset_y) * dv()->get_zoom_level();
-        // only a large mismatch is a real interruption (keyboard/goto/link jump, or a big
-        // step slamming into a document end); small drift comes from page-boundary and
-        // zoom re-centering scale changes and must not cancel the animation mid-glide
-        if (std::abs(actual_step - step) > 32.0f) {
-            smooth_wheel_remaining_y = 0.0f;
-        }
-        else {
-            smooth_wheel_remaining_y -= step;
-            if (std::abs(smooth_wheel_remaining_y) < 0.5f) {
-                smooth_wheel_remaining_y = 0.0f;
-            }
-            update_scrollbar();
         }
     }
     if (is_moving()) {
@@ -4402,6 +4368,66 @@ void MainWidget::handle_search_paper_name(std::wstring paper_name, bool is_shift
     }
 
 }
+void MainWidget::update_fling_prefetch() {
+    // the fling target as a fraction of the viewport, in normalized window units
+    // (the viewport spans 2); positive means scrolling down
+    float view_height = static_cast<float>(dv()->get_view_height());
+    if (view_height > 0.0f) {
+        opengl_widget->fling_prefetch = 2.0f * smooth_wheel_remaining_y / view_height;
+    }
+}
+
+void MainWidget::advance_wheel_fling() {
+    if (smooth_wheel_remaining_y == 0.0f) {
+        // also clears a stale prefetch lead, e.g. after Escape cancelled a fling
+        update_fling_prefetch();
+        return;
+    }
+
+    // drain with the glide's fixed tau (set in move_vertical when the bank changes):
+    // the velocity remaining/tau decays monotonically over the whole glide. A stale
+    // or never-started frame clock contributes one nominal frame, so the first notch
+    // moves immediately
+    float secs;
+    if (smooth_wheel_frame_timer.isValid()) {
+        secs = smooth_wheel_frame_timer.restart() / 1000.0f;
+        if (secs > 0.1f) {
+            secs = 0.016f;
+        }
+    }
+    else {
+        smooth_wheel_frame_timer.start();
+        secs = 0.016f;
+    }
+    float step = smooth_wheel_remaining_y * (1.0f - std::exp(-secs / smooth_wheel_tau));
+    float max_step = SMOOTH_MOVE_MAX_VELOCITY * secs;
+    if (std::abs(step) > max_step) {
+        step = (step > 0.0f) ? max_step : -max_step;
+    }
+    float before_offset_y = dv()->get_offset_y();
+    dv()->move(0.0f, step);
+    float actual_step = (dv()->get_offset_y() - before_offset_y) * dv()->get_zoom_level();
+    // only a large mismatch is a real interruption (keyboard/goto/link jump, or a big
+    // step slamming into a document end); small drift comes from page-boundary and
+    // zoom re-centering scale changes and must not cancel the animation mid-glide
+    if (std::abs(actual_step - step) > 32.0f) {
+        smooth_wheel_remaining_y = 0.0f;
+    }
+    else {
+        smooth_wheel_remaining_y -= step;
+        // firm stop: end the glide when the speed drops below ~150px/s instead of
+        // crawling asymptotically (matches browser inertia cutoffs)
+        if (std::abs(smooth_wheel_remaining_y) < std::max(0.5f, 150.0f * smooth_wheel_tau)) {
+            smooth_wheel_remaining_y = 0.0f;
+        }
+        update_scrollbar();
+    }
+    update_fling_prefetch();
+    // no self re-arm here: paints during a fling are driven by the 16ms validation
+    // timer, and the tick after the drain provides the final at-rest repaint that
+    // restores pixel-perfect positions and NEAREST filtering
+}
+
 void MainWidget::move_vertical(float amount, bool animate) {
     if (opengl_widget->on_vertical_scroll()){
         // hide the link/text labels when we move
@@ -4418,6 +4444,15 @@ void MainWidget::move_vertical(float amount, bool animate) {
         // target, so the animation target is capped at 3/4 of a screen
         float max_remaining = 0.75f * static_cast<float>(dv()->get_view_height());
         smooth_wheel_remaining_y = std::clamp(smooth_wheel_remaining_y, -max_remaining, max_remaining);
+        // ease-out over the whole banked distance: the time constant grows with the
+        // bank (50ms per 72px, clamped to [50ms, 250ms]), so every fling launches at
+        // ~1440px/s — just under the velocity cap — and decelerates over its entire
+        // distance instead of a constant-speed phase braking hard at the end. It is
+        // set here (never recomputed mid-drain, which would spike the velocity when
+        // remaining crosses a notch boundary) and retargets keep remaining/tau at
+        // the launch velocity, i.e. velocity-continuous
+        smooth_wheel_tau = std::clamp(0.05f * std::abs(smooth_wheel_remaining_y) / 72.0f, 0.05f, 0.25f);
+        advance_wheel_fling();
         validation_interval_timer->setInterval(16);
         is_render_invalidated = true;
         validate_render();
@@ -6068,7 +6103,9 @@ void MainWidget::handle_vertical_move(int amount) {
         main_document_view->move_pages(amount);
     }
     else {
-        move_document(0.0f, 72.0f * amount * VERTICAL_MOVE_AMOUNT);
+        // routed through move_vertical so keyboard moves join the wheel fling
+        // animator when smooth_wheel_scrolling is enabled
+        move_vertical(72.0f * amount * VERTICAL_MOVE_AMOUNT, true);
     }
 }
 
