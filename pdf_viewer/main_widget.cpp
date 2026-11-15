@@ -2516,7 +2516,11 @@ void MainWidget::handle_right_click(WindowPos click_pos, bool down, bool is_shif
         return;
     }
     if (RIGHT_CLICK_COMMAND.size() > 0) {
-        execute_macro_if_enabled(RIGHT_CLICK_COMMAND);
+        // run on release only, like the modifier variants (shift_right_click_command etc.) do;
+        // without the gate the command fired on both press and release
+        if (!down) {
+            execute_macro_if_enabled(RIGHT_CLICK_COMMAND);
+        }
         return;
     }
 
