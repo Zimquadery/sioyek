@@ -6624,6 +6624,40 @@ void MainWidget::handle_move_screen(int amount) {
     }
 }
 
+void MainWidget::handle_move_screen_page_aware(int amount) {
+    if (main_document_view->is_presentation_mode()) {
+        main_document_view->move_pages(amount);
+        return;
+    }
+
+    float zoom = dv()->get_zoom_level();
+    if (zoom == 0.0f) {
+        return;
+    }
+
+    float screen_doc_space = static_cast<float>(opengl_widget->height()) * MOVE_SCREEN_PERCENTAGE / zoom;
+    int repeats = amount > 0 ? amount : -amount;
+    for (int i = 0; i < repeats; i++) {
+        float delta = dv()->page_aware_move_delta(amount > 0 ? screen_doc_space : -screen_doc_space);
+        move_document(0, delta * zoom);
+    }
+}
+
+void MainWidget::handle_half_page_horizontal_move(int dir) {
+    if (opengl_widget->get_overview_page() || main_document_view->is_presentation_mode()) {
+        return;
+    }
+
+    int center_page = dv()->get_center_page_number();
+    if (center_page == -1) {
+        return;
+    }
+
+    float half_page_width = dv()->get_document()->get_page_width(center_page) / 2 * dv()->get_zoom_level();
+    dv()->move(dir * half_page_width, 0.0f);
+    last_smart_fit_page = {};
+}
+
 MainWidget* MainWidget::create_restored_window(MainWidget* sibling, const WindowState& state) {
     MainWidget* new_w = new MainWidget(sibling);
     new_w->execute_macro_if_enabled(STARTUP_COMMANDS);
