@@ -4591,6 +4591,56 @@ public:
 
 };
 
+class ScreenDownPageAwareCommand : public Command {
+public:
+    static inline const std::string cname = "screen_down_page_aware";
+    static inline const std::string hname = "Move screen down without crossing page boundaries";
+    ScreenDownPageAwareCommand(MainWidget* w) : Command(cname, w) {};
+
+    void perform() {
+        int rp = num_repeats == 0 ? 1 : num_repeats;
+        widget->handle_move_screen_page_aware(rp);
+    }
+
+};
+
+class ScreenUpPageAwareCommand : public Command {
+public:
+    static inline const std::string cname = "screen_up_page_aware";
+    static inline const std::string hname = "Move screen up without crossing page boundaries";
+    ScreenUpPageAwareCommand(MainWidget* w) : Command(cname, w) {};
+
+    void perform() {
+        int rp = num_repeats == 0 ? 1 : num_repeats;
+        widget->handle_move_screen_page_aware(-rp);
+    }
+
+};
+
+class MoveLeftHalfPageCommand : public Command {
+public:
+    static inline const std::string cname = "move_left_half_page";
+    static inline const std::string hname = "Move left by half a page width";
+    MoveLeftHalfPageCommand(MainWidget* w) : Command(cname, w) {};
+
+    void perform() {
+        widget->handle_half_page_horizontal_move(-1);
+    }
+
+};
+
+class MoveRightHalfPageCommand : public Command {
+public:
+    static inline const std::string cname = "move_right_half_page";
+    static inline const std::string hname = "Move right by half a page width";
+    MoveRightHalfPageCommand(MainWidget* w) : Command(cname, w) {};
+
+    void perform() {
+        widget->handle_half_page_horizontal_move(1);
+    }
+
+};
+
 class NextChapterCommand : public Command {
 public:
     static inline const std::string cname = "next_chapter";
@@ -7384,6 +7434,10 @@ CommandManager::CommandManager(ConfigManager* config_manager) {
     register_command<OpenSelectedUrlCommand>();
     register_command<ScreenDownCommand>();
     register_command<ScreenUpCommand>();
+    register_command<ScreenDownPageAwareCommand>();
+    register_command<ScreenUpPageAwareCommand>();
+    register_command<MoveLeftHalfPageCommand>();
+    register_command<MoveRightHalfPageCommand>();
     register_command<NextChapterCommand>();
     register_command<PrevChapterCommand>();
     register_command<ShowContextMenuCommand>();

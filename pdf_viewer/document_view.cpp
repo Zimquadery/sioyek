@@ -754,6 +754,104 @@ void DocumentView::move_screens(int num_screens) {
     //return move_amount;
 }
 
+// Returns how far the view may move vertically in doc space without crossing a page boundary that
+// has not been seen yet: if the page at the edge of the screen continues past it, the move stops
+// where that page ends; otherwise the next page is aligned with the opposite edge of the screen
+// (like zathura's scroll-page-aware, except that we never skip the last lines of a page when
+// zoomed in). Rows of two pages are treated as one in two page mode.
+float DocumentView::page_aware_move_delta(float delta_v) {
+    if (!current_document || delta_v == 0.0f || zoom_level == 0.0f) {
+        return delta_v;
+    }
+
+    // without the page rects the virtual coordinates don't map to pages reliably in this mode:
+    // fall back to a plain move
+    if (!fast_coordinates() && cached_virtual_rects.size() == 0) {
+        return delta_v;
+    }
+
+    float half_view = view_height / 2 / zoom_level;
+    float epsilon = 0.1f;
+    float edge = offset.y + (delta_v > 0 ? half_view : -half_view);
+    float row_top = 0.0f;
+    float row_end = -1.0f;
+    float prev_row_end = -1.0f;
+
+    if (cached_virtual_rects.size() > 0) {
+        // find the first row whose end is beyond the screen edge; rows of adjacent pages share y0
+        size_t i = 0;
+        while (i < cached_virtual_rects.size() && cached_virtual_rects[i].y1 <= edge + epsilon) {
+            i++;
+        }
+        if (i < cached_virtual_rects.size()) {
+            row_top = cached_virtual_rects[i].y0;
+            row_end = cached_virtual_rects[i].y1;
+            size_t begin = i;
+            while (begin > 0 && cached_virtual_rects[begin - 1].y0 == row_top) {
+                begin--;
+                row_end = std::max(row_end, cached_virtual_rects[begin].y1);
+            }
+            size_t end = i + 1;
+            while (end < cached_virtual_rects.size() && cached_virtual_rects[end].y0 == row_top) {
+                row_end = std::max(row_end, cached_virtual_rects[end].y1);
+                end++;
+            }
+            if (begin > 0) {
+                float prev_row_top = cached_virtual_rects[begin - 1].y0;
+                prev_row_end = cached_virtual_rects[begin - 1].y1;
+                size_t prev = begin - 1;
+                while (prev > 0 && cached_virtual_rects[prev - 1].y0 == prev_row_top) {
+                    prev--;
+                    prev_row_end = std::max(prev_row_end, cached_virtual_rects[prev].y1);
+                }
+            }
+        }
+    }
+    else {
+        int page = current_document->get_offset_page_number(edge);
+        if (page == -1) {
+            return delta_v;
+        }
+        row_top = current_document->get_accum_page_height(page);
+        row_end = row_top + current_document->get_page_height(page);
+        if (row_end <= edge + epsilon) {
+            // the edge sits at (or just past) this page's end: the relevant row is the next one
+            page++;
+            if (page >= current_document->num_pages()) {
+                return delta_v;
+            }
+            row_top = current_document->get_accum_page_height(page);
+            row_end = row_top + current_document->get_page_height(page);
+        }
+        if (page > 0) {
+            prev_row_end = current_document->get_accum_page_height(page);
+        }
+    }
+
+    if (delta_v > 0) {
+        if (row_end < 0) {
+            return delta_v;
+        }
+        if (row_top < edge - epsilon) {
+            // the page at the bottom edge of the screen continues past it
+            return std::min(delta_v, row_end - half_view - offset.y);
+        }
+        // the screen edge sits at a page boundary: align the next page with the top of the screen
+        return std::min(delta_v, row_top + half_view - offset.y);
+    }
+    else {
+        if (row_end > 0 && row_top < edge - epsilon) {
+            // the page at the top edge of the screen continues above it
+            return std::max(delta_v, row_top + half_view - offset.y);
+        }
+        if (prev_row_end >= 0) {
+            // the screen edge sits at a page boundary: align the previous page with the bottom
+            return std::max(delta_v, prev_row_end - half_view - offset.y);
+        }
+    }
+    return delta_v;
+}
+
 void DocumentView::reset_doc_state() {
     zoom_level = 1.0f;
     set_offsets(0.0f, 0.0f);

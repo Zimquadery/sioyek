@@ -680,6 +680,8 @@ public:
     void handle_open_prev_doc();
     void handle_open_all_docs();
     void handle_move_screen(int amount);
+    void handle_move_screen_page_aware(int amount);
+    void handle_half_page_horizontal_move(int dir);
     MainWidget* handle_new_window();
     void handle_open_link(const std::wstring& text, bool copy = false);
     void handle_overview_link(const std::wstring& text);
