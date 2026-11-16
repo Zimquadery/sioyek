@@ -1,0 +1,138 @@
+name: Memory leak tests
+
+# Runs tests/memory/memory_leak_tests.py on a GitHub-hosted Mac, so the tests don't need the
+# developer's machine. Results (leak reports, footprints, logs) are uploaded as an artifact.
+# Runs when started by hand and at most once a week, never on pushes. The weekly run only tests
+# when the app's source code changed since the last tested commit.
+on:
+  workflow_dispatch:
+    inputs:
+      iterations:
+        description: Iterations per scenario
+        default: "40"
+      scenarios:
+        description: Scenario names separated by spaces (empty runs all; see --list)
+        default: ""
+  schedule:
+    # Sundays at 06:00 UTC, with the default inputs
+    - cron: "0 6 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  # Decides whether a scheduled run tests anything: only when the app's source code (not the
+  # documentation, tests or other files) changed since the commit the last run tested, which the
+  # badge job records in memory-tests-commit on the `badges` branch. Manual runs always test.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for source changes
+        id: check
+        run: |
+          tested=""
+          if [ "$GITHUB_EVENT_NAME" = schedule ] && git fetch -q origin badges; then
+            tested=$(git show FETCH_HEAD:memory-tests-commit 2>/dev/null || true)
+          fi
+          if [ -n "$tested" ] && git cat-file -e "$tested^{commit}" 2>/dev/null &&
+            git diff --quiet "$tested" HEAD -- pdf_viewer fzf mupdf zlib pdf_viewer_build_config.pro resources.qrc; then
+            echo "No source changes since the last tested commit $tested"
+            echo run=false >> "$GITHUB_OUTPUT"
+          else
+            echo run=true >> "$GITHUB_OUTPUT"
+          fi
+
+  memory-tests:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: macos-15
+    timeout-minutes: 180
+    env:
+      MAKE_PARALLEL: "3"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache Qt
+        id: qt-cache
+        uses: actions/cache@v4
+        with:
+          path: .local/qt
+          key: qt-6.8.2-macos-qtspeech-qtshadertools-qtmultimedia
+
+      - name: Install Qt 6.8.2
+        if: steps.qt-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install 'aqtinstall==3.3.0'
+          python -m aqt install-qt mac desktop 6.8.2 clang_64 \
+            -m qtspeech qtshadertools qtmultimedia -O .local/qt
+
+      - name: MuPDF version
+        id: mupdf
+        run: echo "commit=$(git -C mupdf rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache MuPDF build
+        uses: actions/cache@v4
+        with:
+          path: mupdf/build
+          key: mupdf-${{ runner.arch }}-${{ steps.mupdf.outputs.commit }}
+
+      - name: Build sioyek
+        run: |
+          export PATH="$PWD/.local/qt/6.8.2/clang_64/bin:$PATH"
+          ./build_mac.sh
+
+      - name: Run memory leak tests
+        env:
+          ITERATIONS: ${{ inputs.iterations || '40' }}
+          SCENARIOS: ${{ inputs.scenarios }}
+        run: |
+          args=(--iterations "$ITERATIONS" --results "$RUNNER_TEMP/memory-results" --window foreground)
+          for scenario in $SCENARIOS; do args+=(--scenario "$scenario"); done
+          python3 tests/memory/memory_leak_tests.py "${args[@]}"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: memory-test-results
+          path: ${{ runner.temp }}/memory-results
+          if-no-files-found: ignore
+
+  # GitHub's own workflow badge can't show when a run was, so this job publishes the result of the
+  # run, how many days ago it ran and how many commits development gained since the tested commit
+  # as a shields.io endpoint badge (memory-tests.json on the orphan `badges` branch, which the
+  # README's badge reads), plus the tested commit for the `changes` job. memory-tests-badge.yml
+  # keeps both counts current, on pushes and daily. It's a separate job so the build and tests
+  # never get a token that can write to the repository. Cancelled and skipped runs leave the badge
+  # alone.
+  badge:
+    needs: memory-tests
+    if: always() && contains(fromJSON('["success", "failure"]'), needs.memory-tests.result)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: badges-branch
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Publish badge
+        env:
+          RESULT: ${{ needs.memory-tests.result == 'success' && 'passing' || 'failing' }}
+          TESTED_COMMIT: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: .github/scripts/memory-tests-badge.sh
