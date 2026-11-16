@@ -57,6 +57,10 @@ struct Annotation {
     std::string modification_time;
     std::string uuid;
 
+    // object number of this annotation's mirror in the PDF file (0 = not mirrored),
+    // only used when `store_annotations_in_pdf` is enabled
+    int pdf_object = 0;
+
     virtual QJsonObject to_json(std::string doc_checksum) const = 0;
     virtual void  add_to_tuples(std::vector<std::pair<std::string, QVariant>>& tuples) = 0;
     virtual std::vector<std::pair<std::string, QVariant>> to_tuples();

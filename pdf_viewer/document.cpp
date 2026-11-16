@@ -27,6 +27,7 @@
 #include "utils.h"
 
 extern bool SHOULD_RENDER_PDF_ANNOTATIONS;
+extern bool STORE_ANNOTATIONS_IN_PDF;
 
 const int WINDOW_SIZE = 10;
 const int EMBEDDING_DIM = 10;
@@ -200,6 +201,7 @@ std::string Document::add_bookmark(const std::wstring& desc, float y_offset) {
     bookmarks.push_back(bookmark);
     db_manager->insert_bookmark(get_checksum(), desc, y_offset, utf8_decode(bookmark.uuid));
     is_annotations_dirty = true;
+    // plain bookmarks have no on-page position, no PDF annotation represents them
     return bookmark.uuid;
 }
 
@@ -215,6 +217,7 @@ std::string Document::add_marked_bookmark(const std::wstring& desc, AbsoluteDocu
     if (db_manager->insert_bookmark_marked(get_checksum(), desc, pos.x, pos.y, utf8_decode(bookmark.uuid))) {
         bookmarks.push_back(bookmark);
         is_annotations_dirty = true;
+        queue_pdf_annotation_write(bookmark);
     }
     return bookmark.uuid;
 }
@@ -236,6 +239,7 @@ std::string Document::add_pending_bookmark(int index, const std::wstring& desc) 
     }
     else {
         is_annotations_dirty = true;
+        queue_pdf_annotation_write(bookmark);
     }
     return bookmark.uuid;
 }
@@ -266,6 +270,7 @@ void Document::add_freetext_bookmark_with_color(const std::wstring& desc, Absolu
     if (db_manager->insert_bookmark_freetext(get_checksum(), bookmark)) {
         bookmarks.push_back(bookmark);
         is_annotations_dirty = true;
+        queue_pdf_annotation_write(bookmark);
     }
 }
 void Document::add_freetext_bookmark(const std::wstring& desc, AbsoluteRect absrect) {
@@ -333,6 +338,7 @@ std::string Document::add_highlight(const std::wstring& annot, AbsoluteDocumentP
         utf8_decode(highlight.uuid))) {
         highlights.push_back(highlight);
         is_annotations_dirty = true;
+        queue_pdf_annotation_write(highlight);
     }
 
     return highlight.uuid;
@@ -369,6 +375,7 @@ std::string Document::add_highlight(const std::wstring& desc,
         highlight.type,
         utf8_decode(highlight.uuid));
     is_annotations_dirty = true;
+    queue_pdf_annotation_write(highlight);
     return highlight.uuid;
 }
 
@@ -404,6 +411,7 @@ int Document::add_portal(Portal portal, bool insert_into_database) {
                 utf8_decode(portal.uuid));
         }
         is_annotations_dirty = true;
+        queue_pdf_annotation_write(portal);
     }
     return index;
 }
@@ -456,6 +464,7 @@ void Document::delete_closest_bookmark(float to_y_offset) {
     if (closest_index > -1) {
         db_manager->delete_bookmark(bookmarks[closest_index].uuid);
         is_annotations_dirty = true;
+        queue_pdf_annotation_delete(get_offset_page_number(bookmarks[closest_index].get_y_offset()), bookmarks[closest_index].pdf_object);
         bookmarks.erase(bookmarks.begin() + closest_index);
     }
 }
@@ -464,8 +473,9 @@ void Document::delete_bookmark(int index) {
 
     if ((index != -1) && (index < bookmarks.size())) {
         if (db_manager->delete_bookmark(bookmarks[index].uuid)) {
-            bookmarks.erase(bookmarks.begin() + index);
             is_annotations_dirty = true;
+            queue_pdf_annotation_delete(get_offset_page_number(bookmarks[index].get_y_offset()), bookmarks[index].pdf_object);
+            bookmarks.erase(bookmarks.begin() + index);
         }
     }
 }
@@ -474,16 +484,18 @@ void Document::delete_highlight_with_index(int index) {
     Highlight highlight_to_delete = highlights[index];
 
     db_manager->delete_highlight(highlight_to_delete.uuid);
-    highlights.erase(highlights.begin() + index);
     is_annotations_dirty = true;
+    queue_pdf_annotation_delete(absolute_to_page_pos(highlight_to_delete.selection_begin).page, highlight_to_delete.pdf_object);
+    highlights.erase(highlights.begin() + index);
 }
 
 void Document::delete_bookmark_with_index(int index) {
     BookMark bookmark_to_delete = bookmarks[index];
 
     db_manager->delete_bookmark(bookmark_to_delete.uuid);
-    bookmarks.erase(bookmarks.begin() + index);
     is_annotations_dirty = true;
+    queue_pdf_annotation_delete(get_offset_page_number(bookmark_to_delete.get_y_offset()), bookmark_to_delete.pdf_object);
+    bookmarks.erase(bookmarks.begin() + index);
 }
 
 void Document::delete_highlight(Highlight hl) {
@@ -511,6 +523,8 @@ bool Document::update_portal(Portal new_portal) {
     for (auto& portal : portals) {
         if (portal.src_offset_y == new_portal.src_offset_y) {
             portal.dst.book_state = new_portal.dst.book_state;
+            is_annotations_dirty = true;
+            queue_pdf_annotation_write(portal);
             return true;
         }
     }
@@ -521,8 +535,9 @@ void Document::delete_closest_portal(float to_offset_y) {
     int closest_index = -1;
     if (find_closest_portal(to_offset_y, &closest_index)) {
         db_manager->delete_portal(portals[closest_index].uuid);
-        portals.erase(portals.begin() + closest_index);
         is_annotations_dirty = true;
+        queue_pdf_annotation_delete(get_offset_page_number(portals[closest_index].src_offset_y), portals[closest_index].pdf_object);
+        portals.erase(portals.begin() + closest_index);
     }
 }
 
@@ -539,6 +554,8 @@ void Document::delete_portal_with_uuid(const std::string& uuid) {
     int index = get_portal_index_with_uuid(uuid);
     if (index > -1) {
         db_manager->delete_portal(uuid);
+        is_annotations_dirty = true;
+        queue_pdf_annotation_delete(get_offset_page_number(portals[index].src_offset_y), portals[index].pdf_object);
         portals.erase(portals.begin() + index);
     }
 }
@@ -601,9 +618,11 @@ void Document::add_mark(char symbol, float y_offset, std::optional<float> x_offs
         m.update_creation_time();
         m.x_offset = x_offset;
         m.zoom_level = zoom_level;
+        m.uuid = new_uuid_utf8();
         marks.push_back(m);
-        db_manager->insert_mark(get_checksum(), symbol, y_offset, new_uuid(), x_offset, zoom_level);
+        db_manager->insert_mark(get_checksum(), symbol, y_offset, utf8_decode(m.uuid), x_offset, zoom_level);
         is_annotations_dirty = true;
+        queue_pdf_mark_write(symbol);
     }
     else {
         marks[current_mark_index].y_offset = y_offset;
@@ -612,6 +631,7 @@ void Document::add_mark(char symbol, float y_offset, std::optional<float> x_offs
         marks[current_mark_index].update_modification_time();
         db_manager->update_mark(get_checksum(), symbol, y_offset, x_offset, zoom_level);
         is_annotations_dirty = true;
+        queue_pdf_mark_write(symbol);
     }
 }
 
@@ -1030,6 +1050,17 @@ bool Document::open(bool* invalid_flag, bool force_load_dimensions, std::string 
             LOG(std::wcerr << "could not open " << file_name << std::endl);
         }
         if ((doc != nullptr) && (!temp)) {
+            if (STORE_ANNOTATIONS_IN_PDF && is_pdf_document()) {
+                // mirrored annotations are drawn by sioyek itself, don't let MuPDF draw them too
+                should_render_annotations = false;
+                // the annotation mirror appends to the file; flush refuses to save if it
+                // changed since this (see flush_pdf_annotations). The generation tells the
+                // save that the document was (re)loaded and its startxref must be
+                // recaptured (the fz_document pointer alone can't: the allocator may
+                // return the same address for the new document).
+                pdf_load_generation++;
+                pdf_load_mtime = QFileInfo(QString::fromStdWString(file_name)).lastModified();
+            }
             //load_document_metadata_from_db();
             load_document_caches(invalid_flag, force_load_dimensions);
             return true;
@@ -1150,6 +1181,7 @@ void Document::load_page_dimensions(bool force_load_now) {
             page_dims_mutex.unlock();
 
             fill_highlight_rects(context_, doc_);
+            ingest_pdf_annotations(context_, doc_, page_widths, accum_page_heights);
             detected_paper_name = detect_paper_name(context_, doc_);
             //db_manager->set_actual_document_name(get_checksum(), detected_paper_name);
 
@@ -2229,6 +2261,12 @@ void Document::get_pdf_annotations(std::vector<BookMark>& pdf_bookmarks, std::ve
 }
 
 void Document::import_annotations() {
+    if (STORE_ANNOTATIONS_IN_PDF) {
+        // the annotations are imported into the database at load time, importing again
+        // would duplicate them
+        show_error_message(L"Annotations are imported from the PDF automatically when `store_annotations_in_pdf` is enabled");
+        return;
+    }
     std::vector<BookMark> pdf_bookmarks;
     std::vector<Highlight> pdf_highlights;
     std::vector<FreehandDrawing> pdf_drawings;
@@ -3935,6 +3973,7 @@ void Document::update_highlight_add_text_annotation(const std::string& uuid, con
         is_annotations_dirty = true;
         highlights[highlight_index].text_annot = text_annot;
         highlights[highlight_index].update_modification_time();
+        queue_pdf_annotation_write(highlights[highlight_index]);
 
     }
 }
@@ -3948,6 +3987,7 @@ void Document::update_highlight_type(int index, char new_type) {
     update_highlight_type(highlights[index].uuid, new_type);
     highlights[index].type = new_type;
     highlights[index].update_modification_time();
+    queue_pdf_annotation_write(highlights[index]);
 }
 
 int Document::get_portal_index_at_pos(AbsoluteDocumentPos abspos) {
@@ -3994,6 +4034,7 @@ void Document::update_bookmark_text(int index, const std::wstring& new_text, flo
             bookmarks[index].description = new_text;
             bookmarks[index].update_modification_time();
             is_annotations_dirty = true;
+            queue_pdf_annotation_write(bookmarks[index]);
         }
     }
 }
@@ -4001,6 +4042,8 @@ void Document::update_bookmark_text(int index, const std::wstring& new_text, flo
 void Document::update_bookmark_position(int index, AbsoluteDocumentPos new_begin_position, AbsoluteDocumentPos new_end_position) {
     if ((index >= 0) && (index < bookmarks.size())) {
         if (db_manager->update_bookmark_change_position(bookmarks[index].uuid, new_begin_position, new_end_position)) {
+            // the mirror may live on another page after the move, delete it there
+            queue_pdf_annotation_delete(get_offset_page_number(bookmarks[index].get_y_offset()), bookmarks[index].pdf_object);
             bookmarks[index].y_offset_ = new_begin_position.y;
             bookmarks[index].begin_x = new_begin_position.x;
             bookmarks[index].begin_y = new_begin_position.y;
@@ -4008,6 +4051,7 @@ void Document::update_bookmark_position(int index, AbsoluteDocumentPos new_begin
             bookmarks[index].end_y = new_end_position.y;
             bookmarks[index].update_modification_time();
             is_annotations_dirty = true;
+            queue_pdf_annotation_write(bookmarks[index]);
         }
     }
 }
@@ -4015,10 +4059,13 @@ void Document::update_bookmark_position(int index, AbsoluteDocumentPos new_begin
 void Document::update_portal_src_position(int index, AbsoluteDocumentPos new_position){
     if ((index >= 0) && (index < portals.size())) {
         if (db_manager->update_portal_change_src_position(portals[index].uuid, new_position)) {
+            // the mirror may live on another page after the move, delete it there
+            queue_pdf_annotation_delete(get_offset_page_number(portals[index].src_offset_y), portals[index].pdf_object);
             portals[index].src_offset_x = new_position.x;
             portals[index].src_offset_y = new_position.y;
             portals[index].update_modification_time();
             is_annotations_dirty = true;
+            queue_pdf_annotation_write(portals[index]);
         }
     }
 }

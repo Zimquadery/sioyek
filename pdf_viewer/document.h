@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <atomic>
 #include <iostream>
 #include <thread>
 #include <mutex>
@@ -9,12 +10,14 @@
 #include <unordered_map>
 #include <deque>
 #include <regex>
+#include <functional>
 
 //#include <Windows.h>
 #include <qstandarditemmodel.h>
 #include <qdatetime.h>
 
 #include <mupdf/fitz.h>
+#include <mupdf/pdf.h>
 #include <qobject.h>
 #include <qnetworkreply.h>
 #include <qjsondocument.h>
@@ -76,6 +79,38 @@ private:
     std::vector<Highlight> highlights;
     std::vector<Portal> portals;
     DatabaseManager* db_manager = nullptr;
+
+    // pending changes of the annotation mirror in the PDF file (see document_annotations.cpp),
+    // only used when `store_annotations_in_pdf` is enabled
+    std::vector<std::string> pdf_pending_writes;
+    std::vector<std::pair<int, int>> pdf_pending_deletions;
+    std::vector<char> pdf_pending_mark_writes;
+    std::vector<char> pdf_pending_mark_deletes;
+    std::vector<std::pair<int, std::string>> pdf_pending_uuid_stamps;
+    int64_t pdf_original_startxref = -1;
+    uint64_t pdf_load_generation = 0;
+    uint64_t pdf_last_saved_load_generation = 0;
+    QDateTime pdf_load_mtime;
+    QDateTime pdf_refusal_mtime;
+    bool pdf_save_failed = false;
+    bool pdf_mtime_refused = false;
+    QDateTime pdf_last_flush_datetime;
+
+    // results of ingest_pdf_annotations which runs in the page-dimensions background
+    // thread: mutations of the document state are staged here and applied on the main
+    // thread by apply_ingested_pdf_annotations
+    struct PdfIngestedAnnotations {
+        std::vector<Highlight> highlights;
+        std::vector<BookMark> bookmarks;
+        std::vector<Mark> marks;
+        std::vector<std::pair<std::string, int>> attaches;
+        std::vector<std::pair<int, int>> deletions;
+        std::vector<char> mark_deletes;
+        bool annotations_dirty = false;
+    };
+    std::vector<PdfIngestedAnnotations> pdf_ingest_results;
+    std::mutex pdf_ingest_mutex;
+    std::atomic<bool> pdf_ingest_result_ready = false;
     std::vector<TocNode*> top_level_toc_nodes;
     //bool only_for_portal = true;
 
@@ -350,6 +385,33 @@ public:
     void export_generated_toc(std::wstring new_file_path);
     void get_pdf_annotations(std::vector<BookMark>& pdf_bookmarks, std::vector<Highlight>& pdf_highlights, std::vector<FreehandDrawing>& pdf_drawings);
     void import_annotations();
+
+    // annotation mirror in the PDF file (document_annotations.cpp)
+    bool is_pdf_document();
+    bool has_pending_pdf_annotation_changes();
+    bool flush_pdf_annotations(bool force = false);
+    void apply_ingested_pdf_annotations();
+    void ingest_pdf_annotations(fz_context* thread_context, fz_document* thread_document,
+        const std::vector<float>& page_widths, const std::vector<float>& page_y_offsets);
+    void queue_pdf_annotation_write(const Annotation& annotation);
+    void queue_pdf_annotation_delete(int page, int pdf_object);
+    void queue_pdf_mark_write(char symbol);
+    void queue_pdf_mark_delete(char symbol);
+
+private:
+    pdf_document* get_pdf_document();
+    int write_pdf_annotation(int page_number, enum pdf_annot_type type, const Annotation& annotation,
+        const std::function<void(pdf_annot*)>& fill);
+    int write_pdf_highlight(const Highlight& highlight);
+    int write_pdf_bookmark(const BookMark& bookmark);
+    int write_pdf_portal(const Portal& portal);
+    bool write_pdf_mark(const Mark& mark);
+    bool erase_pdf_marks(char symbol);
+    bool delete_pdf_annotation(int page_number, int pdf_object);
+    bool stamp_pdf_annotation_uuid(int pdf_object, const std::string& uuid);
+    bool save_pdf_annotations();
+
+public:
     std::vector<PagelessDocumentRect> get_page_flat_words(int page);
     std::vector<std::vector<PagelessDocumentRect>> get_page_flat_word_chars(int page);
     void clear_document_caches();

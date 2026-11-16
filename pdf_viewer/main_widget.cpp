@@ -109,6 +109,7 @@ extern int next_window_id;
 
 extern bool SHOULD_USE_MULTIPLE_MONITORS;
 extern bool FAIL_SAFE_AUTO_SAVE_SESSION;
+extern bool STORE_ANNOTATIONS_IN_PDF;
 extern bool MULTILINE_MENUS;
 extern bool SORT_BOOKMARKS_BY_LOCATION;
 extern bool SORT_HIGHLIGHTS_BY_LOCATION;
@@ -1254,6 +1255,9 @@ MainWidget::MainWidget(fz_context* mupdf_context,
                 last_persistance_datetime = now;
                 persist();
             }
+        }
+        if (STORE_ANNOTATIONS_IN_PDF && doc()) {
+            doc()->flush_pdf_annotations();
         }
         if (!PERIODIC_COMMANDS.empty()){
             QStringList periodic_commands = QString::fromStdWString(PERIODIC_COMMANDS).split(";");
@@ -5881,6 +5885,10 @@ void MainWidget::set_mark_in_current_location(char symbol) {
         db_manager->delete_mark_with_symbol(symbol);
         // we should also delete the cached marks
         document_manager->delete_global_mark(symbol);
+        if (doc()) {
+            // other open documents with the same symbol clean up their own mirror at load time
+            doc()->queue_pdf_mark_delete(symbol);
+        }
         main_document_view->add_mark(symbol);
     }
     else {

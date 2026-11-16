@@ -1034,6 +1034,7 @@ void DocumentView::persist(bool persist_drawings) {
         current_document->persist_annotations();
         current_document->persist_extras();
     }
+    current_document->flush_pdf_annotations(persist_drawings);
 }
 
 int DocumentView::get_current_chapter_index() {

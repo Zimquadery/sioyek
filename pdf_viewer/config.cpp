@@ -28,6 +28,8 @@ bool ADD_NEWLINES_WHEN_COPYING_TEXT = false;
 bool ALWAYS_COPY_SELECTED_TEXT = false;
 bool SHOW_STATUSBAR_ONLY_WHEN_MOUSE_OVER = false;
 float PERSISTANCE_PERIOD = -1.0f;
+bool STORE_ANNOTATIONS_IN_PDF = false;
+int ANNOTATIONS_PDF_SAVE_PERIOD_MILISECONDS = 1000;
 float TEXT_SELECTION_MINIMUM_DISTANCE = 5;
 bool SCROLL_PAST_DOCUMENT_ENDS = true;
 bool HORIZONTAL_SCROLL_PAST_PAGE_ENDS = false;
@@ -998,6 +1000,8 @@ ConfigManager::ConfigManager(const Path& default_path, const Path& auto_path, co
     add_bool(L"linear_filter", &LINEAR_TEXTURE_FILTERING);
     add_bool(L"collapsed_toc", &SMALL_TOC);
     add_bool(L"render_pdf_annotations", &SHOULD_RENDER_PDF_ANNOTATIONS);
+    add_bool(L"store_annotations_in_pdf", &STORE_ANNOTATIONS_IN_PDF);
+    add_int(L"annotations_pdf_save_period_miliseconds", &ANNOTATIONS_PDF_SAVE_PERIOD_MILISECONDS, IntExtras{0, 1000000});
     add_bool(L"ruler_mode", &RULER_MODE);
     add_bool(L"use_ruler_to_highlight_synctex_line", &USE_RULER_TO_HIGHLIGHT_SYNCTEX_LINE);
     add_bool(L"highlight_link_destination", &HIGHLIGHT_LINK_DESTINATION);

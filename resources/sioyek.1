@@ -835,6 +835,25 @@ color_4: space separated list of 4 floats or integers between 0 and
 1. The first three are RGB values, and the last one is opacity.
 
 .HP
+.B store_annotations_in_pdf
+.I boolean
+
+If 1, highlights, bookmarks, portals and marks are also stored inside the
+PDF file itself as standard PDF annotations (a private dictionary is used
+for marks), so other PDF readers show them too. The database remains the
+source of truth and the original bytes of the file are never rewritten:
+changes are appended with an incremental save. Annotations made by other
+programs are shown as sioyek annotations. When enabled, PDF annotations
+are not rendered by MuPDF (sioyek draws them itself). Default is 0.
+.HP
+.B annotations_pdf_save_period_miliseconds
+.I integer
+
+The delay between a change to an annotation and the incremental save which
+appends it to the PDF file, in milliseconds (see
+.BR store_annotations_in_pdf ).
+Pending changes are also flushed when the document is closed. Default is 1000.
+.HP
 .B text_highlight_color
 .I color_3
 

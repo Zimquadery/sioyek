@@ -111,6 +111,7 @@ SOURCES += pdf_viewer/book.cpp \
            pdf_viewer/config.cpp \
            pdf_viewer/database.cpp \
            pdf_viewer/document.cpp \
+           pdf_viewer/document_annotations.cpp \
            pdf_viewer/document_view.cpp \
            pdf_viewer/input.cpp \
            pdf_viewer/main.cpp \
