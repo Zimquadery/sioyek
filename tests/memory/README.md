@@ -22,15 +22,7 @@ renders, GPU textures) goes unnoticed: a run in which the test windows were fron
 graphics memory growing with the bookmark list, which background runs don't reproduce. With
 `--window hidden` no windows appear at all and nothing is rendered. For full coverage use
 `--window foreground` (the window comes to the front and takes focus) when you're away from the
-Mac, or the CI workflow, which uses it.
-
-To run without your Mac at all, use the GitHub Actions workflow
-`.github/workflows/memory-tests.yml`. It builds sioyek on a GitHub-hosted Mac, runs the suite,
-and uploads the reports as the `memory-test-results` artifact. It never runs on pushes: start it
-from the repository's Actions tab, or with
-`gh workflow run memory-tests.yml -f iterations=40 -f scenarios=popups`. It also runs every Sunday
-at 06:00 UTC. The badge at the top of the repository's README shows the latest run's result and
-date.
+Mac.
 
 ## What it does
 
