@@ -27,6 +27,7 @@ bool DEBUG_SMOOTH_FREEHAND_DRAWINGS = true;
 bool ADD_NEWLINES_WHEN_COPYING_TEXT = false;
 bool ALWAYS_COPY_SELECTED_TEXT = false;
 bool SHOW_STATUSBAR_ONLY_WHEN_MOUSE_OVER = false;
+bool SHOW_SCROLLBAR_ONLY_WHEN_MOUSE_OVER = true;
 float PERSISTANCE_PERIOD = -1.0f;
 bool STORE_ANNOTATIONS_IN_PDF = false;
 int ANNOTATIONS_PDF_SAVE_PERIOD_MILISECONDS = 1000;
@@ -1049,6 +1050,7 @@ ConfigManager::ConfigManager(const Path& default_path, const Path& auto_path, co
     add_bool(L"add_newlines_when_copying_text", &ADD_NEWLINES_WHEN_COPYING_TEXT);
     add_bool(L"always_copy_selected_text", &ALWAYS_COPY_SELECTED_TEXT);
     add_bool(L"show_statusbar_only_when_hovered", &SHOW_STATUSBAR_ONLY_WHEN_MOUSE_OVER);
+    add_bool(L"show_scrollbar_only_when_hovered", &SHOW_SCROLLBAR_ONLY_WHEN_MOUSE_OVER);
     add_bool(L"scroll_past_document_ends", &SCROLL_PAST_DOCUMENT_ENDS);
     add_bool(L"horizontal_scroll_past_page_ends", &HORIZONTAL_SCROLL_PAST_PAGE_ENDS);
     add_bool(L"uniform_page_widths", &SAME_WIDTH);

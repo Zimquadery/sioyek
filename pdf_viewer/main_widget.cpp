@@ -126,6 +126,7 @@ extern std::wstring PAPER_SEARCH_CONTRIB_PATH;
 extern bool FUZZY_SEARCHING;
 extern bool AUTO_RENAME_DOWNLOADED_PAPERS;
 extern bool SHOW_STATUSBAR_ONLY_WHEN_MOUSE_OVER;
+extern bool SHOW_SCROLLBAR_ONLY_WHEN_MOUSE_OVER;
 extern bool HIGHLIGHT_LINK_DESTINATION;
 
 extern float TEXT_SELECTION_MINIMUM_DISTANCE;
@@ -513,6 +514,16 @@ void MainWidget::resizeEvent(QResizeEvent* resize_event) {
         }
     }
 
+    if (scroll_bar != nullptr) {
+        int sb_width = scroll_bar->sizeHint().width();
+        if (sb_width <= 0) {
+            sb_width = 14;
+        }
+        scroll_bar->move(main_window_width - sb_width, 0);
+        scroll_bar->resize(sb_width, main_window_height);
+        sync_scrollbar_visibility();
+    }
+
     update_command_hints_position();
 
     if ((main_document_view->get_document() != nullptr) && (main_document_view->get_zoom_level() == 0)) {
@@ -633,6 +644,8 @@ void MainWidget::mouseMoveEvent(QMouseEvent* mouse_event) {
             }
         }
     }
+
+    sync_scrollbar_visibility();
 
     WindowPos mpos(mouse_event->pos());
     AbsoluteDocumentPos abs_mpos = get_window_abspos(mpos);
@@ -1272,6 +1285,8 @@ MainWidget::MainWidget(fz_context* mupdf_context,
             selection_end_indicator->update_pos();
         }
 
+        sync_scrollbar_visibility();
+
         if (doc()) {
             if (doc()->get_should_reload_annotations()) {
                 doc()->reload_annotations_on_new_checksum();
@@ -1344,7 +1359,6 @@ MainWidget::MainWidget(fz_context* mupdf_context,
 
 
     hlayout->addWidget(opengl_widget);
-    hlayout->addWidget(scroll_bar);
 
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -1357,6 +1371,7 @@ MainWidget::MainWidget(fz_context* mupdf_context,
     central_widget->setLayout(layout);
     opengl_widget->stackUnder(status_label);
     setCentralWidget(central_widget);
+    scroll_bar->raise();
 #endif
 
     scroll_bar->setMinimum(0);
@@ -1372,7 +1387,6 @@ MainWidget::MainWidget(fz_context* mupdf_context,
         });
 
 
-    scroll_bar->hide();
 
     if (SHOULD_HIGHLIGHT_LINKS) {
         opengl_widget->set_highlight_links(true, false);
@@ -5649,11 +5663,13 @@ void MainWidget::toggle_scrollbar() {
     // scroll_bar->show()
     // todo: figure out why this is the case and fix it
     QTimer::singleShot(100, [&]() {
-        if (scroll_bar->isVisible()) {
-            scroll_bar->hide();
-        }
-        else {
-            scroll_bar->show();
+        if (!SHOW_SCROLLBAR_ONLY_WHEN_MOUSE_OVER) {
+            if (scroll_bar->isVisible()) {
+                scroll_bar->hide();
+            }
+            else {
+                scroll_bar->show();
+            }
         }
         main_window_width = opengl_widget->width();
         });
@@ -8187,6 +8203,33 @@ bool MainWidget::should_show_status_label(bool check_network) {
         else {
             return should_show_status_label_ || opengl_widget->get_is_searching(&prog);
         }
+    }
+}
+
+bool MainWidget::should_show_scrollbar() {
+    if (scroll_bar == nullptr || !isVisible() || TOUCH_MODE) {
+        return false;
+    }
+    if (scroll_bar->isSliderDown()) {
+        return true;
+    }
+    QPoint mouse_cursor = mapFromGlobal(QCursor::pos());
+    int vicinity_width = std::max(scroll_bar->width(), 14) + 16;
+    QRect vicinity_rect(size().width() - vicinity_width, 0, vicinity_width, size().height());
+    return vicinity_rect.contains(mouse_cursor);
+}
+
+void MainWidget::sync_scrollbar_visibility() {
+    if (!SHOW_SCROLLBAR_ONLY_WHEN_MOUSE_OVER || scroll_bar == nullptr) {
+        return;
+    }
+    if (should_show_scrollbar()) {
+        if (!scroll_bar->isVisible()) {
+            scroll_bar->show();
+        }
+    }
+    else if (scroll_bar->isVisible()) {
+        scroll_bar->hide();
     }
 }
 
