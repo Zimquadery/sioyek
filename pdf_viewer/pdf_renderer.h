@@ -53,6 +53,13 @@ struct RenderResponse {
     GLuint texture = 0;
     bool invalid = false;
     bool pending = true;
+    // rendering failed (e.g. the page is too big for a texture); the closest texture there is is
+    // drawn instead, and the request isn't rendered again until this is evicted (a second after it
+    // failed: see find_rendered_page)
+    bool failed = false;
+    // a tiny render of the whole page, drawn in place of a page that isn't rendered (see
+    // render_preview_if_missing)
+    bool preview = false;
 };
 
 bool operator==(const RenderRequest& lhs, const RenderRequest& rhs);
@@ -102,6 +109,9 @@ class PdfRenderer : public QObject {
     fz_document* get_document_with_path(int thread_index, fz_context* mupdf_context, std::wstring path);
     GLuint try_closest_rendered_page(std::wstring doc_path, int page, bool should_render_annotations, int index, int num_h_slices, int num_v_slices, float zoom_level, float display_scale, int* page_width, int* page_height);
     void delete_old_pixmaps(int thread_index, fz_context* mupdf_context);
+    // renders a tiny preview of req's whole page into the cache, unless one is there already or is
+    // being made (see the definition)
+    void render_preview_if_missing(int thread_index, fz_context* mupdf_context, fz_document* doc, const RenderRequest& req);
     void run(int thread_index);
     void run_search(int thread_index);
     int get_pending_response_index_with_thread_index(const RenderRequest& req, int thread_index);

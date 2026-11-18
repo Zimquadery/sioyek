@@ -128,6 +128,10 @@ float VERTICAL_MOVE_AMOUNT = 1.0f;
 float HORIZONTAL_MOVE_AMOUNT = 1.0f;
 float MOVE_SCREEN_PERCENTAGE = 0.5f;
 unsigned int CACHE_INVALID_MILIES = 1000;
+// a failed render is retried this long after it failed (failures can be transient, e.g. the system
+// briefly running out of memory); without a retry, a failed page is only rendered again once its
+// cache entry is evicted, which needs cache pressure and so may never happen
+unsigned int FAILED_RENDER_RETRY_MILIES = 1000;
 int PERSIST_MILIES = 1000 * 60;
 int PAGE_PADDINGS = 0;
 int MAX_PENDING_REQUESTS = 31;

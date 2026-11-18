@@ -1,6 +1,14 @@
 #include "pdf_renderer.h"
 #include "utils.h"
 #include <qdatetime.h>
+#include <algorithm>
+
+extern bool SHOULD_DRAW_UNRENDERED_PAGES;
+extern unsigned int FAILED_RENDER_RETRY_MILIES;
+
+// the height in pixels of the tiny preview of a page drawn while the page isn't rendered (see
+// render_preview_if_missing); its width is at most 8 times that, whatever the page's aspect ratio
+static const float PREVIEW_MIN_HEIGHT_PX = 64.0f;
 
 extern bool LINEAR_TEXTURE_FILTERING;
 extern int NUM_V_SLICES;
@@ -148,7 +156,7 @@ GLuint PdfRenderer::find_rendered_page(std::wstring path, int page, bool should_
         cached_response_mutex.lock();
         GLuint result = 0;
         for (auto& cached_resp : cached_responses) {
-            if (cached_resp.pending) continue;
+            if (cached_resp.pending || cached_resp.failed) continue;
 
             if ((cached_resp.request == req) && (cached_resp.invalid == false)) {
                 cached_resp.last_access_time = QDateTime::currentMSecsSinceEpoch();
@@ -203,6 +211,19 @@ GLuint PdfRenderer::find_rendered_page(std::wstring path, int page, bool should_
         }
         cached_response_mutex.unlock();
         if (result == 0) {
+            // A failed page isn't drawn and the worker treats it as already rendered, so without
+            // this it would only be rendered again once its entry is evicted (which needs cache
+            // pressure, so it may never happen). Failures can be transient, so the failed entry is
+            // dropped a while after it failed and the request below renders the page again.
+            cached_response_mutex.lock();
+            unsigned int now_ms = QDateTime::currentMSecsSinceEpoch();
+            for (int i = static_cast<int>(cached_responses.size()) - 1; i >= 0; i--) {
+                const RenderResponse& resp = cached_responses[i];
+                if (resp.failed && (resp.request == req) && ((now_ms - resp.last_access_time) > FAILED_RENDER_RETRY_MILIES)) {
+                    cached_responses.erase(cached_responses.begin() + i);
+                }
+            }
+            cached_response_mutex.unlock();
             if (TOUCH_MODE) {
                 if (!no_rerender) {
                     add_request(path, page, should_render_annotations, zoom_level, display_scale, index, num_h_slices, num_v_slices);
@@ -232,15 +253,25 @@ GLuint PdfRenderer::find_rendered_page(std::wstring path, int page, bool should_
 GLuint PdfRenderer::try_closest_rendered_page(std::wstring doc_path, int page, bool should_render_annotations, int index, int num_h_slices, int num_v_slices, float zoom_level, float display_scale, int* page_width, int* page_height) {
     /*
     If the requested page is not available, we try to find the rendered page with the closest
-    possible zoom level to our request and return that instead
+    possible zoom level to our request and return that instead. A tiny preview of the whole page
+    (see render_preview_if_missing) is only used when there is no other render at all: it shows
+    the page's content in place of white, but any real render is better than it.
     */
     cached_response_mutex.lock();
 
     float min_diff = 10000.0f;
+    float preview_min_diff = 10000.0f;
     GLuint best_texture = 0;
+    GLuint preview_texture = 0;
+    RenderResponse* best_response = nullptr;
+    RenderResponse* preview_response = nullptr;
 
-    for (const auto& cached_resp : cached_responses) {
-        if (cached_resp.pending) continue;
+    for (auto& cached_resp : cached_responses) {
+        if (cached_resp.pending || cached_resp.failed) continue;
+        // previews aren't uploaded yet when they are first drawn (nobody ever requests their zoom
+        // level, so find_rendered_page never uploads them): they are uploaded here, where their
+        // texture is first needed
+        bool not_uploaded_yet = cached_resp.preview && (cached_resp.texture == 0) && (cached_resp.pixmap != nullptr);
         if ((cached_resp.request.slice_index == index) &&
             (cached_resp.request.num_h_slices == num_h_slices) &&
             (cached_resp.request.num_v_slices == num_v_slices) &&
@@ -248,18 +279,180 @@ GLuint PdfRenderer::try_closest_rendered_page(std::wstring doc_path, int page, b
             (cached_resp.request.display_scale == display_scale) &&
             (cached_resp.request.should_render_annotations == should_render_annotations) &&
             (cached_resp.request.page == page) &&
-            (cached_resp.texture != 0)) {
+            ((cached_resp.texture != 0) || not_uploaded_yet)) {
             float diff = cached_resp.request.zoom_level - zoom_level;
-            if (diff <= min_diff) {
-                min_diff = diff;
-                best_texture = cached_resp.texture;
-                if (page_width) *page_width = static_cast<int>(cached_resp.width * zoom_level / cached_resp.request.zoom_level);
-                if (page_height) *page_height = static_cast<int>(cached_resp.height * zoom_level / cached_resp.request.zoom_level);
+            if (cached_resp.preview) {
+                if (diff <= preview_min_diff) {
+                    preview_min_diff = diff;
+                    preview_texture = cached_resp.texture;
+                    preview_response = &cached_resp;
+                }
+            }
+            else {
+                if (diff <= min_diff) {
+                    min_diff = diff;
+                    best_texture = cached_resp.texture;
+                    best_response = &cached_resp;
+                }
             }
         }
     }
+    if (!best_response && preview_response) {
+        best_texture = preview_texture;
+        best_response = preview_response;
+    }
+    if (best_response) {
+        // the texture is going to be drawn until the requested one is rendered, so it counts as
+        // used and delete_old_pages won't delete it from under us
+        best_response->last_access_time = QDateTime::currentMSecsSinceEpoch();
+
+        if (best_response->texture == 0) {
+            glGenTextures(1, &best_texture);
+            glBindTexture(GL_TEXTURE_2D, best_texture);
+
+            if (LINEAR_TEXTURE_FILTERING) {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            }
+            else {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            }
+
+#ifdef GL_CLAMP
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+#else
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+#endif
+
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, best_response->pixmap->w, best_response->pixmap->h, 0, GL_RGB, GL_UNSIGNED_BYTE, best_response->pixmap->samples);
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+            // don't need the pixmap anymore
+            pixmap_drop_mutex[best_response->thread].lock();
+            pixmaps_to_drop[best_response->thread].push_back(best_response->pixmap);
+            best_response->texture = best_texture;
+            pixmap_drop_mutex[best_response->thread].unlock();
+        }
+
+        if (page_width) *page_width = static_cast<int>(best_response->width * zoom_level / best_response->request.zoom_level);
+        if (page_height) *page_height = static_cast<int>(best_response->height * zoom_level / best_response->request.zoom_level);
+    }
     cached_response_mutex.unlock();
     return best_texture;
+}
+
+// Renders a tiny preview of req's whole page into the cache, unless one is there already or is
+// being made. While a page isn't rendered (yet, or at all, when its render keeps failing), the
+// preview is drawn in its place, stretched: it shows the page's actual content instead of white.
+void PdfRenderer::render_preview_if_missing(int thread_index, fz_context* mupdf_context, fz_document* doc, const RenderRequest& req) {
+    if (!SHOULD_DRAW_UNRENDERED_PAGES) return;
+    if (doc == nullptr) return;
+
+    fz_page* page = nullptr;
+    float width = 0, height = 0;
+    fz_var(page);
+    fz_try(mupdf_context) {
+        page = fz_load_page(mupdf_context, doc, req.page);
+        fz_rect rect = fz_bound_page(mupdf_context, page);
+        width = rect.x1 - rect.x0;
+        height = rect.y1 - rect.y0;
+    }
+    fz_always(mupdf_context) {
+        fz_drop_page(mupdf_context, page);
+    }
+    fz_catch(mupdf_context) {
+        return;
+    }
+    if ((width <= 0) || (height <= 0)) return;
+
+    RenderRequest preview_req = req;
+    preview_req.slice_index = -1;
+    preview_req.num_h_slices = 1;
+    preview_req.num_v_slices = 1;
+    preview_req.zoom_level = std::min(PREVIEW_MIN_HEIGHT_PX / (height * req.display_scale),
+        8.0f * PREVIEW_MIN_HEIGHT_PX / (width * req.display_scale));
+
+    // the entry is reserved before rendering, so that concurrent requests of the same page see it
+    // as already being made and don't render the preview twice
+    cached_response_mutex.lock();
+    bool exists = false;
+    for (const auto& cached : cached_responses) {
+        if ((cached.request == preview_req) && (cached.invalid == false)) exists = true;
+    }
+    if (!exists) {
+        RenderResponse resp;
+        resp.thread = thread_index;
+        resp.request = preview_req;
+        resp.last_access_time = QDateTime::currentMSecsSinceEpoch();
+        resp.preview = true;
+        cached_responses.push_back(resp);
+    }
+    cached_response_mutex.unlock();
+    if (exists) return;
+
+    fz_pixmap* preview = nullptr;
+    fz_page* preview_page = nullptr;
+    fz_var(preview);
+    fz_var(preview_page);
+    fz_try(mupdf_context) {
+        fz_matrix transform_matrix = fz_pre_scale(fz_identity, preview_req.zoom_level * preview_req.display_scale, preview_req.zoom_level * preview_req.display_scale);
+        if (preview_req.should_render_annotations) {
+            preview = fz_new_pixmap_from_page_number(mupdf_context, doc, preview_req.page, transform_matrix, fz_device_rgb(mupdf_context), 0);
+        }
+        else {
+            preview_page = fz_load_page(mupdf_context, doc, preview_req.page);
+            preview = fz_new_pixmap_from_page_contents(mupdf_context, preview_page, transform_matrix, fz_device_rgb(mupdf_context), 0);
+        }
+        if (preview && (GAMMA != 1.0f)) {
+            fz_gamma_pixmap(mupdf_context, preview, GAMMA);
+        }
+    }
+    fz_always(mupdf_context) {
+        fz_drop_page(mupdf_context, preview_page);
+    }
+    fz_catch(mupdf_context) {
+        preview = nullptr;
+    }
+
+    cached_response_mutex.lock();
+    int index = -1;
+    bool invalid = false;
+    for (int i = 0; i < static_cast<int>(cached_responses.size()); i++) {
+        RenderResponse& resp = cached_responses[i];
+        if ((resp.thread == thread_index) && (resp.request == preview_req) && resp.pending) {
+            index = i;
+            invalid = resp.invalid;
+        }
+    }
+    bool stored = false;
+    if ((index >= 0) && preview && !invalid) {
+        RenderResponse& resp = cached_responses[index];
+        resp.pixmap = preview;
+        resp.width = preview->w;
+        resp.height = preview->h;
+        resp.last_access_time = QDateTime::currentMSecsSinceEpoch();
+        resp.pending = false;
+        stored = true;
+        preview = nullptr;
+        index = -1;
+    }
+    if (index >= 0) {
+        // the preview couldn't be rendered (it is tried again with the next request of the page),
+        // or the reservation was invalidated while rendering (e.g. the document changed)
+        cached_responses.erase(cached_responses.begin() + index);
+    }
+    cached_response_mutex.unlock();
+    if (preview) {
+        // the reservation was deleted while rendering (e.g. the document was closed)
+        fz_drop_pixmap(mupdf_context, preview);
+    }
+    if (stored) {
+        emit render_advance();
+    }
 }
 
 void PdfRenderer::delete_old_pages(bool force_all, bool invalidate_all) {
@@ -280,7 +473,12 @@ void PdfRenderer::delete_old_pages(bool force_all, bool invalidate_all) {
     std::vector<int> cached_response_times;
 
     for (size_t i = 0; i < cached_responses.size(); i++) {
-        cached_response_times.push_back(now - cached_responses[i].last_access_time);
+        // tiny previews of pages (see render_preview_if_missing) don't push the deletion threshold:
+        // they hold a handful of kilobytes, and there is one per page that was drawn at all (they
+        // are still deleted when they get older than the threshold)
+        if (!cached_responses[i].preview) {
+            cached_response_times.push_back(now - cached_responses[i].last_access_time);
+        }
     }
 
     int N = num_cached_pages * NUM_V_SLICES * NUM_H_SLICES;
@@ -510,7 +708,12 @@ void PdfRenderer::run(int thread_index) {
             pending_requests_mutex.unlock();
             cached_response_mutex.lock();
             for (int i = 0; i < cached_responses.size(); i++) {
-                if ((cached_responses[i].thread == thread_index) && (cached_responses[i].texture == 0) && (cached_responses[i].pixmap == nullptr)) {
+                // failed entries are excluded: they are invalidated here otherwise, and since the
+                // failure triggers a repaint (see the render_advance in the failure handling), they
+                // would be rendered again every frame instead of retried at a bounded rate
+                // (see find_rendered_page)
+                if ((cached_responses[i].thread == thread_index) && (cached_responses[i].texture == 0) &&
+                    (cached_responses[i].pixmap == nullptr) && (cached_responses[i].failed == false)) {
                     cached_responses[i].invalid = true;
                 }
             }
@@ -566,6 +769,11 @@ void PdfRenderer::run(int thread_index) {
             fz_try(mupdf_context) {
                 fz_matrix transform_matrix = fz_pre_scale(fz_identity, req.zoom_level * req.display_scale, req.zoom_level * req.display_scale);
                 fz_document* doc = get_document_with_path(thread_index, mupdf_context, req.path);
+
+                // while this request renders, make sure there is a tiny preview of the page to draw
+                // in its place (and in the place of other requests of the page that aren't rendered yet)
+                render_preview_if_missing(thread_index, mupdf_context, doc, req);
+
                 fz_pixmap* rendered_pixmap = nullptr;
 
                 if (req.slice_index == -1) {
@@ -628,6 +836,18 @@ void PdfRenderer::run(int thread_index) {
 
             }
             fz_catch(mupdf_context) {
+                // Keep the entry as failed: while it is cached, the page is drawn from the closest
+                // texture there is and not rendered again until it is dropped (a while after it
+                // failed: see find_rendered_page).
+                cached_response_mutex.lock();
+                int index = get_pending_response_index_with_thread_index(req, thread_index);
+                if (index >= 0) {
+                    cached_responses[index].pending = false;
+                    cached_responses[index].failed = true;
+                    cached_responses[index].last_access_time = QDateTime::currentMSecsSinceEpoch();
+                }
+                cached_response_mutex.unlock();
+                emit render_advance();
                 std::cerr << "Error: could not render page" << std::endl;
             }
         }
