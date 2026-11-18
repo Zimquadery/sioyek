@@ -6386,13 +6386,12 @@ public:
 
 };
 
-class EmbedAnnotationsCommand : public Command {
+// shared plumbing for commands that take a file path requirement and write to it
+class FileOutputCommand : public Command {
 public:
-    static inline const std::string cname = "embed_annotations";
-    static inline const std::string hname = "Embed the annotations into a new PDF file";
-    EmbedAnnotationsCommand(MainWidget* w) : Command(cname, w) {};
-
     std::optional<std::wstring> file_path = {};
+
+    FileOutputCommand(std::string name, MainWidget* w) : Command(name, w) {};
 
     virtual void set_file_requirement(std::wstring value) {
         file_path = value;
@@ -6400,10 +6399,7 @@ public:
 
     std::optional<QString> get_file_path_requirement_root_dir() {
         QFileInfo file_info(QString::fromStdWString(widget->doc()->get_path()));
-        QString full_path = file_info.absolutePath();
-        QString file_path = file_info.fileName();
-        QString parent_path = full_path.mid(full_path.size() - file_path.size());
-        return parent_path;
+        return file_info.absolutePath();
     }
 
     std::optional<Requirement> next_requirement(MainWidget* widget) {
@@ -6413,6 +6409,13 @@ public:
         }
         return {};
     }
+};
+
+class EmbedAnnotationsCommand : public FileOutputCommand {
+public:
+    static inline const std::string cname = "embed_annotations";
+    static inline const std::string hname = "Embed the annotations into a new PDF file";
+    EmbedAnnotationsCommand(MainWidget* w) : FileOutputCommand(cname, w) {};
 
     void perform() {
         if (file_path->size() > 0) {
@@ -6421,33 +6424,11 @@ public:
     }
 };
 
-class EmbedGeneratedTocCommand : public Command {
+class EmbedGeneratedTocCommand : public FileOutputCommand {
 public:
     static inline const std::string cname = "embed_generated_toc";
     static inline const std::string hname = "Embed generated table of contents into a new PDF file";
-    EmbedGeneratedTocCommand(MainWidget* w) : Command(cname, w) {};
-
-    std::optional<std::wstring> file_path = {};
-
-    virtual void set_file_requirement(std::wstring value) {
-        file_path = value;
-    }
-
-    std::optional<QString> get_file_path_requirement_root_dir() {
-        QFileInfo file_info(QString::fromStdWString(widget->doc()->get_path()));
-        QString full_path = file_info.absolutePath();
-        QString file_path = file_info.fileName();
-        QString parent_path = full_path.mid(full_path.size() - file_path.size());
-        return parent_path;
-    }
-
-    std::optional<Requirement> next_requirement(MainWidget* widget) {
-        if (!file_path.has_value()) {
-            Requirement req = { RequirementType::File, "File Path" };
-            return req;
-        }
-        return {};
-    }
+    EmbedGeneratedTocCommand(MainWidget* w) : FileOutputCommand(cname, w) {};
 
     void perform() {
         if (file_path->size() > 0) {
@@ -6456,33 +6437,11 @@ public:
     }
 };
 
-class ExportGeneratedTocCommand : public Command {
+class ExportGeneratedTocCommand : public FileOutputCommand {
 public:
     static inline const std::string cname = "export_generated_toc";
     static inline const std::string hname = "Export the generated table of contents into a text file";
-    ExportGeneratedTocCommand(MainWidget* w) : Command(cname, w) {};
-
-    std::optional<std::wstring> file_path = {};
-
-    virtual void set_file_requirement(std::wstring value) {
-        file_path = value;
-    }
-
-    std::optional<QString> get_file_path_requirement_root_dir() {
-        QFileInfo file_info(QString::fromStdWString(widget->doc()->get_path()));
-        QString full_path = file_info.absolutePath();
-        QString file_path = file_info.fileName();
-        QString parent_path = full_path.mid(full_path.size() - file_path.size());
-        return parent_path;
-    }
-
-    std::optional<Requirement> next_requirement(MainWidget* widget) {
-        if (!file_path.has_value()) {
-            Requirement req = { RequirementType::File, "File Path" };
-            return req;
-        }
-        return {};
-    }
+    ExportGeneratedTocCommand(MainWidget* w) : FileOutputCommand(cname, w) {};
 
     void perform() {
         if (file_path->size() > 0) {
