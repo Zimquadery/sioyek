@@ -77,7 +77,6 @@ struct OpenGLSharedResources {
     GLint compiled_dot_offset_uniform_location = 0;
     GLint compiled_dot_scale_uniform_location = 0;
 
-    //GLint gamma_uniform_location = 0;
 
     GLint custom_color_transform_uniform_location = 0;
 
@@ -87,16 +86,12 @@ struct OpenGLSharedResources {
     GLuint compiled_points_vertex_buffer_object = 0;
     GLuint compiled_points_index_buffer_object = 0;
 
-    //GLuint test_vao;
-    //GLuint test_vbo;
-    //GLuint test_ibo;
 
     bool is_initialized = false;
 };
 
 
 class PdfViewOpenGLWidget : public QOpenGLWidget, protected QOpenGLExtraFunctions {
-//class PdfViewOpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_1 {
 public:
 
     enum ColorPalette {
@@ -159,8 +154,6 @@ private:
     float last_mouse_down_document_offset_y = 0;
     std::vector<AbsoluteRect> pending_download_portals;
 
-    //float vertical_line_location;
-    //bool should_draw_vertical_line = false;
     QDateTime creation_time;
 
     std::optional<std::function<void(const OpenedBookState&)>> on_link_edit = {};
@@ -244,10 +237,6 @@ public:
     PdfViewOpenGLWidget(DocumentView* document_view, PdfRenderer* pdf_renderer, ConfigManager* config_manager, bool is_helper, QWidget* parent = nullptr);
     ~PdfViewOpenGLWidget();
 
-    //void set_vertical_line_pos(float pos);
-    //float get_vertical_line_pos();
-    //void set_should_draw_vertical_line(bool val);
-    //bool get_should_draw_vertical_line();
     void handle_escape();
 
     std::map<int, std::vector<MarkedDataRect>> get_marked_data_rect_map();
@@ -309,7 +298,6 @@ public:
 
     void bind_program(ColorPalette forced_palette=ColorPalette::None);
     void cancel_search();
-    //void window_pos_to_overview_pos(float window_x, float window_y, float* doc_offset_x, float* doc_offset_y, int* doc_page);
     DocumentPos window_pos_to_overview_pos(NormalizedWindowPos window_pos);
     void rotate_clockwise();
     void rotate_counterclockwise();
@@ -369,7 +357,6 @@ public:
     void set_scratchpad(ScratchPad* pad);
     ScratchPad* get_scratchpad();
     bool can_use_cached_scratchpad_framebuffer();
-    //void update_framebuffer_cache();
     void compile_drawings(DocumentView* dv, const std::vector<FreehandDrawing>& drawings);
     void clear_background_color();
     CompiledDrawingData compile_drawings_into_vertex_and_index_buffers(const std::vector<float>& line_coordinates,

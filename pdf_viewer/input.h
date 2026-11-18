@@ -89,7 +89,6 @@ public:
 
 class CommandManager {
 private:
-    //std::vector<Command> commands;
 public:
 
     std::map < std::string, std::function<std::unique_ptr<Command>(MainWidget*)> > new_commands;
@@ -125,9 +124,7 @@ public:
 struct InputParseTreeNode {
 
     std::vector<InputParseTreeNode*> children;
-    //char command;
     int command;
-    //std::vector<std::string> name;
     std::vector<std::string> name_;
     std::optional<std::function<std::unique_ptr<Command>(MainWidget*)>> generator = {};
     bool shift_modifier = false;
@@ -163,12 +160,9 @@ private:
     void add_command_key_mappings(InputParseTreeNode* root, std::unordered_map<std::string, std::vector<std::string>>& map, std::vector<InputParseTreeNode*> prefix) const;
     void get_commands_with_current_prefix_helper(InputParseTreeNode* node, std::vector<InputParseTreeNode*> prefix, std::unordered_map<std::string, std::vector<std::string>>& map) const;
 public:
-    //char create_link_sumbol = 0;
-    //char create_bookmark_symbol = 0;
 
     InputHandler(const Path& default_path, const std::vector<Path>& user_paths, CommandManager* cm);
     void reload_config_files(const Path& default_path, const std::vector<Path>& user_path);
-    //std::vector<std::unique_ptr<Command>> handle_key(QKeyEvent* key_event, bool shift_pressed, bool control_pressed, bool alt_pressed ,int* num_repeats);
     int get_event_key(QKeyEvent* key_event, bool* shift_pressed, bool* control_pressed, bool* is_command_pressed, bool* alt_pressed);
     std::unique_ptr<Command> handle_key(MainWidget* w, QKeyEvent* key_event, bool shift_pressed, bool control_pressed, bool is_command_pressed, bool alt_pressed, int* num_repeats);
     std::unique_ptr<Command> get_menu_command(MainWidget* w, QKeyEvent* key_event, bool shift_pressed, bool control_pressed, bool command_pressed, bool alt_pressed);

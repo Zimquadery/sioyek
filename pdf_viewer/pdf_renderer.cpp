@@ -6,7 +6,6 @@ extern bool LINEAR_TEXTURE_FILTERING;
 extern int NUM_V_SLICES;
 extern int NUM_H_SLICES;
 extern bool TOUCH_MODE;
-//extern bool AUTO_EMBED_ANNOTATIONS;
 extern bool CASE_SENSITIVE_SEARCH;
 extern bool SMARTCASE_SEARCH;
 extern float GAMMA;
@@ -65,7 +64,6 @@ void PdfRenderer::join_threads()
 
 
 void PdfRenderer::add_request(std::wstring document_path, int page, bool should_render_annotations, float zoom_level, float display_scale, int index, int num_h_slices, int num_v_slices) {
-    //fz_document* doc = get_document_with_path(document_path);
     if (document_path.size() > 0) {
         RenderRequest req;
         req.path = document_path;
@@ -112,7 +110,6 @@ void PdfRenderer::add_request(std::wstring document_path,
     std::mutex* mut,
     std::optional<std::pair<int, int>> range) {
 
-    //fz_document* doc = get_document_with_path(document_path);
     if (document_path.size() > 0) {
 
         SearchRequest req;
@@ -138,7 +135,6 @@ void PdfRenderer::add_request(std::wstring document_path,
 //should only be called from the main thread
 
 GLuint PdfRenderer::find_rendered_page(std::wstring path, int page, bool should_render_annotations, int index, int num_h_slices, int num_v_slices, float zoom_level, float display_scale, int* page_width, int* page_height) {
-    //fz_document* doc = get_document_with_path(path);
     if (path.size() > 0) {
         RenderRequest req;
         req.path = path;
@@ -464,7 +460,6 @@ fz_document* PdfRenderer::get_document_with_path(int thread_index, fz_context* m
 
     fz_document* ret_val = nullptr;
     fz_try(mupdf_context) {
-        //		ret_val = fz_open_document(mupdf_context, utf8_encode(path).c_str());
         ret_val = open_document_with_file_name(mupdf_context, path);
 
         if (fz_needs_password(mupdf_context, ret_val)) {
@@ -573,12 +568,6 @@ void PdfRenderer::run(int thread_index) {
                 fz_document* doc = get_document_with_path(thread_index, mupdf_context, req.path);
                 fz_pixmap* rendered_pixmap = nullptr;
 
-                //if (AUTO_EMBED_ANNOTATIONS) {
-                //	fz_page* page = fz_load_page(mupdf_context, doc, req.page);
-                //	rendered_pixmap = fz_new_pixmap_from_page_contents(mupdf_context, page, transform_matrix, fz_device_rgb(mupdf_context), 0);
-                //	fz_drop_page(mupdf_context, page);
-                //}
-                //else {
                 if (req.slice_index == -1) {
                     if (req.should_render_annotations) {
                         rendered_pixmap = fz_new_pixmap_from_page_number(mupdf_context, doc, req.page, transform_matrix, fz_device_rgb(mupdf_context), 0);

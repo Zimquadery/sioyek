@@ -46,7 +46,6 @@ public:
     bool select_mark(const std::string& checksum, std::vector<Mark>& out_result);
     bool insert_bookmark(const std::string& checksum, const std::wstring& desc, float offset_y, std::wstring uuid);
     bool insert_bookmark_marked(const std::string& checksum, const std::wstring& desc, float offset_x, float offset_y, std::wstring uuid);
-    //bool insert_bookmark_freetext(const std::string& checksum, const std::wstring& desc, float begin_x, float begin_y, float end_x, float end_y, float color_red, float color_green, float color_blue, float font_size, std::string font_face, std::wstring uuid);
     bool insert_bookmark_freetext(const std::string& checksum, const BookMark& bm);
     bool select_bookmark(const std::string& checksum, std::vector<BookMark>& out_result);
     bool insert_portal(const std::string& src_checksum,
@@ -71,7 +70,6 @@ public:
     bool delete_bookmark(const std::string& uuid);
     bool global_select_bookmark(std::vector<std::pair<std::string, BookMark>>& out_result);
     bool global_select_highlight(std::vector<std::pair<std::string, Highlight>>& out_result);
-    //bool update_portal(const std::string& checksum, float dst_offset_x, float dst_offset_y, float dst_zoom_level, float src_offset_y);
     bool update_portal(const std::string& uuid, float dst_offset_x, float dst_offset_y, float dst_zoom_level);
     bool update_highlight_add_annotation(const std::string& uuid, const std::wstring& text_annot);
     bool update_highlight_type(const std::string& uuid, char new_type);

@@ -76,7 +76,6 @@ TocNode* get_toc_node_from_indices(const std::vector<TocNode*>& roots, const std
 
 fz_stext_char* find_closest_char_to_document_point(const std::vector<fz_stext_char*> flat_chars, fz_point document_point, int* location_index);
 fz_stext_line* find_closest_line_to_document_point(fz_stext_page* page, fz_point document_point, int* index);
-//void merge_selected_character_rects(const std::deque<fz_rect>& selected_character_rects, std::vector<fz_rect>& resulting_rects, bool touch_vertically = true);
 void split_key_string(std::wstring haystack, const std::wstring& needle, std::vector<std::wstring>& res);
 void run_command(std::wstring command, QStringList parameters, bool wait = true);
 
@@ -84,8 +83,6 @@ std::wstring get_string_from_stext_block(fz_stext_block* block, bool handle_rtl=
 std::wstring get_string_from_stext_line(fz_stext_line* line, bool handle_rtl=false);
 std::vector<PagelessDocumentRect> get_char_rects_from_stext_line(fz_stext_line* line);
 void sleep_ms(unsigned int ms);
-//void open_url(const std::string& url_string);
-//void open_url(const std::wstring& url_string);
 
 void open_file_url(const std::wstring& file_url, bool show_fail_message);
 void open_web_url(const std::wstring& web_url);
@@ -96,9 +93,7 @@ void search_google_scholar(const std::wstring& search_string);
 void search_libgen(const std::wstring& search_string);
 void index_references(fz_stext_page* page, int page_number, std::map<std::wstring, IndexedData>& indices);
 void get_flat_chars_from_stext_page(fz_stext_page* stext_page, std::vector<fz_stext_char*>& flat_chars, bool dehyphenate=false);
-//void get_flat_chars_from_stext_page_for_bib_detection(fz_stext_page* stext_page, std::vector<fz_stext_char*>& flat_chars);
 int find_best_vertical_line_location(fz_pixmap* pixmap, int relative_click_x, int relative_click_y);
-//void get_flat_chars_from_stext_page_with_space(fz_stext_page* stext_page, std::vector<fz_stext_char*>& flat_chars, fz_stext_char* space);
 void index_equations(const std::vector<fz_stext_char*>& flat_chars, int page_number, std::map<std::wstring, std::vector<IndexedData>>& indices);
 void find_regex_matches_in_stext_page(const std::vector<fz_stext_char*>& flat_chars,
     const std::wregex& regex,
@@ -108,20 +103,17 @@ bool is_string_numeric_float(const std::wstring& str);
 void create_file_if_not_exists(const std::wstring& path);
 QByteArray serialize_string_array(const QStringList& string_list);
 QStringList deserialize_string_array(const QByteArray& byte_array);
-//Path add_redundant_dot_to_path(const Path& sane_path);
 bool should_reuse_instance(int argc, char** argv);
 bool should_new_instance(int argc, char** argv);
 QCommandLineParser* get_command_line_parser();
 std::wstring concatenate_path(const std::wstring& prefix, const std::wstring& suffix);
 std::wstring get_canonical_path(const std::wstring& path);
 void split_path(std::wstring path, std::vector<std::wstring>& res);
-//std::wstring canonicalize_path(const std::wstring& path);
 std::wstring add_redundant_dot_to_path(const std::wstring& path);
 float manhattan_distance(float x1, float y1, float x2, float y2);
 float manhattan_distance(fvec2 v1, fvec2 v2);
 QWidget* get_top_level_widget(QWidget* widget);
 std::wstring strip_string(std::wstring& input_string);
-//void index_generic(const std::vector<fz_stext_char*>& flat_chars, int page_number, std::vector<IndexedData>& indices);
 void index_generic(const std::vector<fz_stext_char*>& flat_chars, int page_number, std::vector<IndexedData>& indices);
 std::vector<std::wstring> split_whitespace(std::wstring const& input);
 float type_name_similarity_score(std::wstring name1, std::wstring name2);
@@ -131,7 +123,6 @@ char* get_argv_value(int argc, char** argv, std::string key);
 void split_root_file(QString path, QString& out_root, QString& out_partial);
 QString expand_home_dir(QString path);
 std::vector<unsigned int> get_max_width_histogram_from_pixmap(fz_pixmap* pixmap);
-//std::vector<unsigned int> get_line_ends_from_histogram(std::vector<unsigned int> histogram);
 void get_line_begins_and_ends_from_histogram(std::vector<unsigned int> histogram, std::vector<unsigned int>& begins, std::vector<unsigned int>& ends);
 
 template<typename T>
@@ -310,7 +301,6 @@ std::map<std::string, int> annotation_prism(std::vector<T>& file_annotations,
         file_annotation_ids[file_annotations[i].uuid] = i;
     }
 
-    //for (auto annot : file_annotations) {
     for (int i = 0; i < file_annotations.size(); i++) {
         if (existing_annotation_ids.find(file_annotations[i].uuid) == existing_annotation_ids.end()) {
             new_annotations.push_back(&file_annotations[i]);
@@ -323,7 +313,6 @@ std::map<std::string, int> annotation_prism(std::vector<T>& file_annotations,
             }
         }
     }
-    //for (auto annot : existing_annotations) {
     for (int i = 0; i < existing_annotations.size(); i++) {
         if (file_annotation_ids.find(existing_annotations[i].uuid) == file_annotation_ids.end()) {
             deleted_annotations.push_back(&existing_annotations[i]);
@@ -496,8 +485,6 @@ public:
 #ifdef SIOYEK_ANDROID
 class AndroidTextToSpeechHandler : public TextToSpeechHandler {
 public:
-    // std::optional<std::function<void(int, int)>> word_callback = {};
-    // std::optional<std::function<void(QString)>> state_change_callback = {};
 
     AndroidTextToSpeechHandler();
 

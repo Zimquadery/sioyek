@@ -48,10 +48,6 @@ bool are_same(const AbsoluteDocumentPos& lhs, const AbsoluteDocumentPos& rhs) {
     return are_same(lhs.x, rhs.x) && are_same(lhs.y, rhs.y);
 }
 
-//bool operator==(const AbsoluteDocumentPos& lhs, const AbsoluteDocumentPos& rhs)
-//{
-//	return are_same(lhs.x, rhs.x) && are_same(lhs.y, rhs.y);
-//}
 
 AbsoluteDocumentPos DocumentPos::to_absolute(Document* doc) const{
     return doc->document_to_absolute_pos(*this);

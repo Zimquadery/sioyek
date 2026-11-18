@@ -84,8 +84,6 @@ extern bool TOUCH_MODE;
 class HierarchialSortFilterProxyModel : public QSortFilterProxyModel {
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
-    //public:
-    //	mutable int count = 0;
 };
 
 class ConfigFileChangeListener {
@@ -123,7 +121,6 @@ protected:
 
 
     QLineEdit* line_edit = nullptr;
-    //QSortFilterProxyModel* proxy_model = nullptr;
     MySortFilterProxyModel* proxy_model = nullptr;
     bool is_fuzzy = false;
     int pressed_row = -1;
@@ -268,22 +265,11 @@ public:
 
 
         QStandardItemModel* model = create_table_model(table);
-        //model->setItem(selected_index, 0, new QStandardItem(QString::fromStdWString(std_string_list[selected_index])));
-        //QStandardItemModel* model = new QStandardItemModel();
 
-        //for (size_t i = 0; i < std_string_list.size(); i++) {
-        //	QStandardItem* name_item = new QStandardItem(QString::fromStdWString(std_string_list[i]));
-        //	QStandardItem* key_item = new QStandardItem(QString::fromStdWString(std_string_list_right[i]));
-        //	key_item->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);
-        //	model->appendRow(QList<QStandardItem*>() << name_item << key_item);
-        //}
 
         this->proxy_model->setSourceModel(model);
 
         QTableView* table_view = dynamic_cast<QTableView*>(this->get_view());
-        //        QScroller::grabGesture(table_view, QScroller::LeftMouseButtonGesture);
-        //        table_view->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-        //        table_view->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
 
         if (selected_index != -1) {
@@ -388,8 +374,6 @@ public:
 template <typename T>
 class TouchFilteredSelectWidget : public QWidget {
 private:
-    //    QStringListModel string_list_model;
-    //    MySortFilterProxyModel proxy_model;
     TouchListView* list_view = nullptr;
     QWidget* parent_widget;
     std::vector<T> values;
@@ -397,9 +381,6 @@ private:
     std::function<void(T*)> on_delete_function = nullptr;
 
 public:
-    //	void set_selected_index(int index) {
-    //		list_view->set_selected_index(index);
-    //	}
     void initialize() {
 
         QObject::connect(list_view, &TouchListView::itemSelected, [&](QString name, int index) {
@@ -409,7 +390,6 @@ public:
 
         QObject::connect(list_view, &TouchListView::itemDeleted, [&](QString name, int index) {
             on_delete_function(&values[index]);
-            //deleteLater();
             });
     }
     TouchFilteredSelectWidget(bool is_fuzzy, std::vector<std::wstring> std_string_list,
@@ -428,8 +408,6 @@ public:
         for (auto s : std_string_list) {
             string_list.append(QString::fromStdWString(s));
         }
-        //        string_list_model.setStringList(string_list);
-        //        proxy_model.setSourceModel(string_list_model);
 
         list_view = new TouchListView(is_fuzzy, string_list, selected_index, this, true);
         initialize();
@@ -462,8 +440,6 @@ public:
         on_delete_function(on_delete) {
 
         parent_widget = parent;
-        //        string_list_model.setStringList(string_list);
-        //        proxy_model.setSourceModel(string_list_model);
 
         list_view = new TouchListView(is_fuzzy, model, selected_index, this, true);
         initialize();
@@ -473,7 +449,6 @@ public:
         QWidget::resizeEvent(resize_event);
         int parent_width = parentWidget()->size().width();
         int parent_height = parentWidget()->size().height();
-        //        setFixedSize(parent_width * 0.9f, parent_height);
         list_view->resize(parent_width * 0.9f, parent_height);
         move(parent_width * 0.05f, 0);
         resize(parent_width * 0.9f, parent_height);
@@ -568,7 +543,6 @@ class TouchCommandSelector : public QWidget {
 public:
     TouchCommandSelector(bool is_fuzzy, const QStringList& commands, MainWidget* mw);
     void resizeEvent(QResizeEvent* resize_event) override;
-    //    void keyReleaseEvent(QKeyEvent* key_event) override;
 
 private:
     MainWidget* main_widget;
@@ -609,7 +583,6 @@ public:
 
 };
 
-//class FileSelector : public BaseSelectorWidget<std::wstring, QListView, QSortFilterProxyModel> {
 class FileSelector : public BaseSelectorWidget {
 private:
 
@@ -661,7 +634,6 @@ public:
         else {
             dynamic_cast<QListView*>(get_view())->setCurrentIndex(list_model->index(0, 0));
         }
-        //dynamic_cast<QListView*>(get_view())->setCurrentIndex();
     }
 
     virtual bool on_text_change(const QString& text) {
@@ -755,7 +727,6 @@ public:
 
     AndroidSelector(QWidget* parent);
     void resizeEvent(QResizeEvent* resize_event) override;
-    //    bool event(QEvent *event) override;
 private:
     //    QVBoxLayout* layout;
     //    QPushButton* fullscreen_button;
@@ -826,10 +797,6 @@ public:
 private:
 
     MainWidget* main_widget;
-    //TouchDeleteButton* delete_button;
-    //QQuickWidget* buttons_widget;
-    //QHBoxLayout* layout;
-    //QPushButton* delete_highlight_button;
 };
 
 class SearchButtons : public QWidget {
@@ -841,14 +808,9 @@ private:
 
     MainWidget* main_widget;
     TouchSearchButtons* buttons_widget;
-    //QHBoxLayout* layout;
-    //QPushButton* prev_match_button;
-    //QPushButton* next_match_button;
-    //QPushButton* goto_initial_location_button;
 };
 
 class ConfigUI : public QWidget {
-    //class ConfigUI : public QQuickWidget{
 public:
     ConfigUI(std::string name, MainWidget* parent);
     void resizeEvent(QResizeEvent* resize_event) override;
@@ -869,7 +831,6 @@ public:
 private:
     float* color_location;
     QColorDialog* color_picker;
-    //    QQuickWidget* color_picker;
 
 };
 
@@ -891,22 +852,10 @@ private:
 
     bool* bool_location;
     TouchCheckbox* checkbox;
-    //   	TouchCh
-    //    QHBoxLayout* layout;
-    //    QCheckBox* checkbox;
-    //    QLabel* label;
 
 };
 
 
-//class TextConfigUI : public ConfigUI{
-//public:
-//	TextConfigUI(MainWidget* parent, std::wstring* config_location);
-//    void resizeEvent(QResizeEvent* resize_event) override;
-//private:
-//    std::wstring* float_location;
-//    TouchTextEdit* text_edit = nullptr;
-//};
 
 class FloatConfigUI : public ConfigUI {
 public:

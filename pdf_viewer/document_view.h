@@ -35,8 +35,6 @@ protected:
     Document* current_document = nullptr;
 
     float zoom_level = 0.0f;
-    //float offset_x = 0.0f;
-    //float offset_y = 0.0f;
     VirtualPos offset = {0, 0};
     std::vector<VirtualRect> cached_virtual_rects;
     bool two_page_mode = false;
@@ -89,7 +87,6 @@ public:
     float get_zoom_level();
     DocumentViewState get_state();
     PortalViewState get_checksum_state();
-    //void set_opened_book_state(const OpenedBookState& state);
     void handle_escape();
     void set_book_state(OpenedBookState state);
     virtual bool set_offsets(float new_offset_x, float new_offset_y, bool force = false);
@@ -128,7 +125,6 @@ public:
     std::string add_bookmark(std::wstring desc);
     std::string add_highlight(AbsoluteDocumentPos selection_begin, AbsoluteDocumentPos selection_end, char type);
     void on_view_size_change(int new_width, int new_height);
-    //void absolute_to_window_pos(float absolute_x, float absolute_y, float* window_x, float* window_y);
     NormalizedWindowPos absolute_to_window_pos(AbsoluteDocumentPos absolute_pos);
 
     void fill_cached_virtual_rects(bool force=false);
@@ -141,7 +137,6 @@ public:
     WindowRect document_to_window_irect(DocumentRect);
     NormalizedWindowRect document_to_window_rect_pixel_perfect(DocumentRect doc_rect, int pixel_width, int pixel_height, bool banded = false);
     DocumentPos window_to_document_pos(WindowPos window_pos);
-    //DocumentPos window_to_document_pos_uncentered(WindowPos window_pos);
     AbsoluteDocumentPos window_to_absolute_document_pos(WindowPos window_pos);
     NormalizedWindowPos window_to_normalized_window_pos(WindowPos window_pos);
     WindowPos normalized_window_to_window_pos(NormalizedWindowPos normalized_window_pos);
@@ -193,10 +188,8 @@ public:
     void set_vertical_line_pos(float pos);
     bool has_ruler_rect();
     std::optional<AbsoluteRect> get_ruler_rect();
-    //float get_vertical_line_pos();
     float get_ruler_pos();
 
-    //float get_vertical_line_window_y();
     float get_ruler_window_y();
     std::optional<NormalizedWindowRect> get_ruler_window_rect();
 

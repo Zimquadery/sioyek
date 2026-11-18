@@ -74,14 +74,6 @@ PortalViewState DocumentView::get_checksum_state() {
     return res;
 }
 
-//void DocumentView::set_opened_book_state(const OpenedBookState& state) {
-//    set_offsets(state.offset_x, state.offset_y);
-//    set_zoom_level(state.zoom_level, true);
-//    is_ruler_mode_ = state.ruler_mode;
-//    ruler_pos = state.ruler_pos;
-//    ruler_rect = state.ruler_rect;
-//
-//}
 
 
 void DocumentView::handle_escape() {
@@ -151,8 +143,6 @@ bool DocumentView::set_offsets(float new_offset_x, float new_offset_y, bool forc
         if (new_offset_x < min_x_offset) { new_offset_x = min_x_offset; truncated = true; }
     }
 
-    //offset_x = new_offset_x;
-    //offset_y = new_offset_y;
     offset = absolute_to_virtual_pos(AbsoluteDocumentPos{new_offset_x, new_offset_y});
     return truncated;
 }
@@ -161,16 +151,6 @@ Document* DocumentView::get_document() {
     return current_document;
 }
 
-//int DocumentView::get_num_search_results() {
-//	search_results_mutex.lock();
-//	int num = search_results.size();
-//	search_results_mutex.unlock();
-//	return num;
-//}
-//
-//int DocumentView::get_current_search_result_index() {
-//	return current_search_result_index;
-//}
 
 std::optional<Portal> DocumentView::find_closest_portal(bool limit) {
     if (current_document) {
@@ -314,9 +294,6 @@ std::optional<PdfLink> DocumentView::get_link_in_pos(WindowPos pos) {
 }
 
 int DocumentView::get_highlight_index_in_pos(WindowPos window_pos) {
-    //auto [view_x, view_y] = window_to_absolute_document_pos(window_pos);
-
-    //fz_point pos = { view_x, view_y };
     AbsoluteDocumentPos pos = window_pos.to_absolute(this);
 
     // if multiple highlights contain the position, we return the smallest highlight
@@ -329,7 +306,6 @@ int DocumentView::get_highlight_index_in_pos(WindowPos window_pos) {
 
         for (size_t i = 0; i < highlights.size(); i++) {
             for (size_t j = 0; j < highlights[i].highlight_rects.size(); j++) {
-                //if (fz_is_point_inside_rect(pos, highlights[i].highlight_rects[j])) {
                 if (highlights[i].highlight_rects[j].contains(pos)) {
                     int length = highlights[i].description.size();
                     if (length < min_length) {
@@ -381,21 +357,11 @@ void DocumentView::on_view_size_change(int new_width, int new_height) {
     view_height = new_height;
 }
 
-//void DocumentView::absolute_to_window_pos_pixels(float absolute_x, float absolute_y, float* window_x, float* window_y) {
-//
-//}
 
 NormalizedWindowPos DocumentView::absolute_to_window_pos(AbsoluteDocumentPos abs) {
     VirtualPos vpos = absolute_to_virtual_pos(abs);
     WindowPos window_pos = virtual_to_window_pos(vpos);
     return window_pos.to_window_normalized(this);
-    //NormalizedWindowPos res;
-    //float half_width = static_cast<float>(view_width) / zoom_level / 2;
-    //float half_height = static_cast<float>(view_height) / zoom_level / 2;
-
-    //res.x = (abs.x + offset.x) / half_width;
-    //res.y = (-abs.y + offset.y) / half_height;
-    //return res;
 
 }
 
@@ -432,8 +398,6 @@ WindowPos DocumentView::absolute_to_window_pos_in_pixels(AbsoluteDocumentPos abs
 WindowPos DocumentView::document_to_window_pos_in_pixels_uncentered(DocumentPos doc_pos) {
     VirtualPos vpos = document_to_virtual_pos(doc_pos);
     return virtual_to_window_pos(vpos);
-    //AbsoluteDocumentPos abspos = current_document->document_to_absolute_pos(doc_pos);
-    //return absolute_to_window_pos_in_pixels(abspos);
 }
 
 WindowPos DocumentView::document_to_window_pos_in_pixels_banded(DocumentPos doc_pos) {
@@ -483,7 +447,6 @@ NormalizedWindowRect DocumentView::document_to_window_rect_pixel_perfect(Documen
 
     bottom_right.x -= ((bottom_right.x - top_left.x) - pixel_width);
     if (!banded) {
-        //w1.y -= ((w1.y - w0.y) - pixel_height);
         bottom_right.y -= ((bottom_right.y - top_left.y) - pixel_height);
     }
 
@@ -493,23 +456,10 @@ NormalizedWindowRect DocumentView::document_to_window_rect_pixel_perfect(Documen
     return NormalizedWindowRect(top_left_normalized, bottom_right_normalized);
 }
 
-//DocumentPos DocumentView::window_to_document_pos_uncentered(WindowPos window_pos) {
-//    if (current_document) {
-//        return current_document->absolute_to_page_pos_uncentered(
-//            { (window_pos.x - view_width / 2) / zoom_level - offset.x,
-//            (window_pos.y - view_height / 2) / zoom_level + offset.y });
-//    }
-//    else {
-//        return { -1, 0, 0 };
-//    }
-//}
 
 DocumentPos DocumentView::window_to_document_pos(WindowPos window_pos) {
     if (current_document) {
         return window_to_absolute_document_pos(window_pos).to_document(current_document);
-        //return current_document->absolute_to_page_pos_uncentered(
-        //    { (window_pos.x - view_width / 2) / zoom_level - offset.x,
-        //    (window_pos.y - view_height / 2) / zoom_level + offset.y });
     }
     else {
         return { -1, 0, 0 };
@@ -519,9 +469,6 @@ DocumentPos DocumentView::window_to_document_pos(WindowPos window_pos) {
 AbsoluteDocumentPos DocumentView::window_to_absolute_document_pos(WindowPos window_pos) {
     VirtualPos virtual_pos = window_to_virtual_pos(window_pos);
     return virtual_to_absolute_pos(virtual_pos);
-    //float doc_x = (window_pos.x - view_width / 2) / zoom_level - offset.x;
-    //float doc_y = (window_pos.y - view_height / 2) / zoom_level + offset.y;
-    //return { doc_x, doc_y };
 }
 
 NormalizedWindowPos DocumentView::window_to_normalized_window_pos(WindowPos window_pos) {
@@ -661,9 +608,6 @@ bool DocumentView::move_absolute(float dx, float dy, bool force) {
     AbsoluteDocumentPos prev_offsets = get_offsets();
 
     return set_offsets(prev_offsets.x + dx, prev_offsets.y + dy, force);
-    //offset.x += dx;
-    //offset.y += dy;
-    //return false;
 }
 
 bool DocumentView::move_virtual(float dx, float dy, bool force) {
@@ -751,7 +695,6 @@ void DocumentView::move_pages(int num_pages) {
 void DocumentView::move_screens(int num_screens) {
     float screen_height_in_doc_space = view_height / zoom_level;
     set_offset_y(get_offset_y() + num_screens * screen_height_in_doc_space * MOVE_SCREEN_PERCENTAGE);
-    //return move_amount;
 }
 
 // Returns how far the view may move vertically in doc space without crossing a page boundary that
@@ -881,13 +824,8 @@ void DocumentView::open_document(const std::wstring& doc_path,
     //	return;
     //}
 
-    //document_path = cannonical_path;
-
-
-    //current_document = new Document(mupdf_context, doc_path, database);
-    //current_document = document_manager->get_document(doc_path);
+	// Document construction moved to the shared document_manager cache (do not create per view).
     current_document = document_manager->get_document(canonical_path);
-    //current_document->open();
     if (!current_document->open(invalid_flag, force_load_dimensions)) {
         current_document = nullptr;
     }
@@ -914,8 +852,6 @@ void DocumentView::open_document(const std::wstring& doc_path,
         if (prev_state.size() > 0) {
             OpenedBookState previous_state = prev_state[0];
             zoom_level = previous_state.zoom_level;
-            //offset_x = previous_state.offset_x;
-            //offset_y = previous_state.offset_y;
             set_offsets(previous_state.offset_x, previous_state.offset_y);
             is_auto_resize_mode = false;
         }
@@ -950,21 +886,6 @@ void DocumentView::goto_page(int page) {
     set_offset_y(get_page_offset(page) + view_height_in_document_space() / 2);
 }
 
-//void DocumentView::goto_toc_link(std::variant<PageTocLink, ChapterTocLink> toc_link) {
-//	int page = -1;
-//
-//	if (std::holds_alternative<PageTocLink>(toc_link)) {
-//		PageTocLink l = std::get<PageTocLink>(toc_link);
-//		page = l.page;
-//	}
-//	else{
-//		ChapterTocLink l = std::get<ChapterTocLink>(toc_link);
-//		std::vector<int> accum_chapter_page_counts;
-//		current_document->count_chapter_pages_accum(accum_chapter_page_counts);
-//		page = accum_chapter_page_counts[l.chapter] + l.page;
-//	}
-//	set_offset_y(get_page_offset(page) + view_height_in_document_space()/2);
-//}
 
 void DocumentView::fit_to_page_height_and_width_smart() {
 
@@ -1010,7 +931,6 @@ void DocumentView::fit_to_page_height(bool smart) {
     }
 
     set_zoom_level(static_cast<float>(view_height - 20) / page_height, true);
-    //set_offset_y(-imbalance * normal_page_height / 2.0f);
     goto_offset_within_page(cp, (imbalance / 2.0f + 0.5f) * normal_page_height);
 }
 
@@ -1020,7 +940,6 @@ void DocumentView::fit_to_page_width(bool smart, bool ratio) {
     int cp = get_center_page_number();
     if (cp == -1) return;
 
-    //int page_width = current_document->get_page_width(cp);
     if (smart) {
 
         if (two_page_mode) {
@@ -1285,22 +1204,9 @@ std::optional<NormalizedWindowRect> DocumentView::get_ruler_window_rect() {
     return {};
 }
 
-//float DocumentView::get_vertical_line_window_y() {
-//
-//	float absol_end_y = get_vertical_line_pos();
-//
-//	absol_end_y += RULER_PADDING;
-//
-//	float window_begin_x, window_begin_y;
-//	float window_end_x, window_end_y;
-//	absolute_to_window_pos(0.0, absol_end_y, &window_end_x, &window_end_y);
-//
-//	return window_end_y;
-//}
 
 void DocumentView::goto_vertical_line_pos() {
     if (current_document) {
-        //float new_y_offset = vertical_line_pos;
         float new_y_offset = get_ruler_pos();
         set_offset_y(new_y_offset);
         is_ruler_mode_ = true;
@@ -1525,10 +1431,6 @@ std::vector<SmartViewCandidate> DocumentView::find_line_definitions() {
                     candid.target_pos = DocumentPos{ possible_targets[j].page, 0, possible_targets[j].y_offset };
                     candid.reference_type = ReferenceType::Generic;
                     generic_positions.push_back(candid);
-                    //generic_positions.push_back(
-                    //    std::make_pair(DocumentPos{ possible_targets[j].page, 0, possible_targets[j].y_offset },
-                    //        generic_item_rects[i])
-                    //);
                 }
             }
             for (int i = 0; i < reference_texts.size(); i++) {
@@ -1571,14 +1473,8 @@ std::vector<SmartViewCandidate> DocumentView::find_line_definitions() {
                     candid.target_pos = DocumentPos{ index[0].page, 0, index[0].y_offset };
                     candid.reference_type = ReferenceType::Reference;
                     reference_positions.push_back(candid);
-                    //reference_positions.push_back(
-                    //    std::make_pair(
-                    //        DocumentPos{ index[0].page, 0, index[0].y_offset },
-                    //        reference_rects[i])
-                    //);
                 }
             }
-            //for (auto equation_text : equation_texts) {
             for (int i = 0; i < equation_texts.size(); i++) {
                 auto index = current_document->find_equation_with_string(equation_texts[i], get_vertical_line_page());
 
@@ -1590,12 +1486,6 @@ std::vector<SmartViewCandidate> DocumentView::find_line_definitions() {
                     candid.target_pos = DocumentPos{ index[0].page, 0, index[0].y_offset };
                     candid.reference_type = ReferenceType::Equation;
                     equation_positions.push_back(candid);
-                    //equation_positions.push_back(
-                    //    std::make_pair(
-                    //        DocumentPos { index[0].page, 0, index[0].y_offset },
-                    //        equation_rects[i]
-                    //    )
-                    //);
                 }
             }
 
@@ -1626,7 +1516,6 @@ std::vector<SmartViewCandidate> DocumentView::find_line_definitions() {
 bool DocumentView::goto_definition() {
     std::vector<SmartViewCandidate> defloc = find_line_definitions();
     if (defloc.size() > 0) {
-        //goto_offset_within_page(defloc[0].first.page, defloc[0].first.y);
         DocumentPos docpos = defloc[0].get_docpos(this);
         goto_offset_within_page(docpos.page, docpos.y);
         return true;
@@ -1743,7 +1632,6 @@ std::optional<AbsoluteRect> DocumentView::shrink_selection(bool is_begin, bool w
 }
 
 std::optional<AbsoluteRect> DocumentView::expand_selection(bool is_begin, bool word) {
-    //current_document->get_stext_with_page_number()
     if (selected_character_rects.size() > 0) {
         int index = is_begin ? 0 : selected_character_rects.size() - 1;
 

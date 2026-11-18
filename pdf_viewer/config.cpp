@@ -283,12 +283,10 @@ bool FILL_TEXTBAR_WITH_SELECTED_TEXT = true;
 int NUM_PRERENDERED_NEXT_SLIDES = 1;
 int NUM_PRERENDERED_PREV_SLIDES = 0;
 float SMOOTH_MOVE_MAX_VELOCITY = 1500;
-//float SMOOTH_MOVE_INITIAL_VELOCITY = 1500;
 float PAGE_SPACE_X = 10.0f;
 float PAGE_SPACE_Y = 10.0f;
 bool USE_KEYBOARD_POINT_SELECTION = false;
 std::wstring TAG_FONT_FACE = L"";
-//UIRect TEST_UI_RECT = {true, -0.1f, 0.1f, -0.1f, 0.1f};
 
 bool PAPER_DOWNLOAD_CREATE_PORTAL = true;
 bool PAPER_DOWNLOAD_AUTODETECT_PAPER_NAME = true;
@@ -357,8 +355,6 @@ std::wstring RIGHT_CLICK_SCROLL_UP_COMMAND = L"";
 std::wstring RIGHT_CLICK_SCROLL_DOWN_COMMAND = L"";
 std::wstring LEFT_CLICK_SCROLL_UP_COMMAND = L"";
 std::wstring LEFT_CLICK_SCROLL_DOWN_COMMAND = L"";
-//std::wstring TABLET_PEN_CLICK_COMMAND = L"[s]show_touch_main_menu;[r]move_visual_mark_next";
-//std::wstring TABLET_PEN_DOUBLE_CLICK_COMMAND = L"toggle_scratchpad_mode";
 std::wstring TABLET_PEN_DOUBLE_CLICK_COMMAND = L"load_scratchpad";
 std::wstring VOLUME_DOWN_COMMAND = L"";
 std::wstring VOLUME_UP_COMMAND = L"";
@@ -1190,8 +1186,6 @@ void ConfigManager::persist_config() {
 #ifdef SIOYEK_ANDROID
     serialize(android_config_path);
 #else
-    //Path path(L"test.config");
-    //serialize(path);
 #endif
 
 }
@@ -1494,9 +1488,6 @@ QVariant ConfigModel::data(const QModelIndex& index, int role) const {
             return QVariant::fromValue(QString::fromStdWString(config_name));
         }
         if (col == 2) {
-            //std::wstringstream config_serialized;
-            //conf->serialize(conf->value, config_serialized);
-            //QVariant::fromValue(QString::fromStdWString(config_serialized.str()));
             if (config_type == ConfigType::Bool) {
                 return QVariant::fromValue(*(bool*)conf->value);
             }
@@ -1534,10 +1525,6 @@ QVariant ConfigModel::data(const QModelIndex& index, int role) const {
                 return QVariant::fromValue(QColor(out_rgb[0], out_rgb[1], out_rgb[2], out_rgb[3]));
             }
 
-            //if (config_type == ConfigType::String) {
-            //	//QColor::from
-            //	return QVariant::fromValue(QString::fromStdWString(*(std::wstring*)conf->value));
-            //}
             return QVariant::fromValue(QString(""));
         }
 

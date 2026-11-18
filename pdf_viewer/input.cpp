@@ -250,21 +250,10 @@ class LazyCommand : public Command {
 private:
     CommandManager* command_manager;
     std::string command_name;
-    //std::wstring command_params;
     std::vector<std::wstring> command_params;
     std::unique_ptr<Command> actual_command = nullptr;
     NoopCommand noop;
 
-    //void parse_command_text(std::wstring command_text) {
-    //    int index = command_text.find(L"(");
-    //    if (index != -1) {
-    //        command_name = utf8_encode(command_text.substr(0, index));
-    //        command_params = command_text.substr(index + 1, command_text.size() - index - 2);
-    //    }
-    //    else {
-    //        command_name = utf8_encode(command_text);
-    //    }
-    //}
 
     std::optional<std::wstring> get_result() override{
         if (actual_command) {
@@ -321,7 +310,6 @@ public:
             command_params.push_back(arg.toStdWString());
         }
 
-        //parse_command_text(command_text);
     }
 
     void set_text_requirement(std::wstring value) { get_command()->set_text_requirement(value); }
@@ -363,7 +351,6 @@ public:
 class MacroCommand : public Command {
     std::vector<std::unique_ptr<Command>> commands;
     std::vector<std::string> modes;
-    //std::wstring commands;
     std::string name;
     std::wstring raw_commands;
     CommandManager* command_manager;
@@ -429,7 +416,6 @@ public:
     }
 
     MacroCommand(MainWidget* widget_, CommandManager* manager, std::string name_, std::wstring commands_) : Command(name_, widget_) {
-        //commands = std::move(commands_);
         command_manager = manager;
         name = name_;
         raw_commands = commands_;
@@ -771,8 +757,6 @@ public:
             for (int i = 0; i < commands.size(); i++) {
                 if (mode_matches(mode_string, modes[i])) {
                     perform_subcommand(i);
-                    // widget->handle_command_types(std::move(commands[i]), 1);
-                    //commands[i]->run(widget);
                     return;
                 }
             }
@@ -859,7 +843,6 @@ public:
                 }
                 return res;
             }
-            //return "[macro]" + commands[0]->get_name();
         }
     }
 
@@ -920,7 +903,6 @@ public:
                 }
                 return res;
             }
-            //return "[macro]" + commands[0]->get_name();
         }
     }
 
@@ -1674,7 +1656,6 @@ public:
 
     void perform() {
         result = text1.value() + text2.value();
-        //widget->set_status_message(result.value());
         show_error_message(result.value());
     }
 
@@ -1748,10 +1729,8 @@ public:
             int index = value_qstring.indexOf('|');
             if (index != -1) {
 
-                //QStringList parts = value_qstring.split("|");
                 prompt_title = value_qstring.left(index).toStdWString();
                 default_value = value_qstring.right(value_qstring.size() - prompt_title->size() - 1).toStdWString();
-                //default_value = parts.at(1).toStdWString();
             }
             else {
                 prompt_title = value;
@@ -1898,30 +1877,6 @@ public:
 
 };
 
-//class ShowOptionsCommand : public TextCommand {
-//public:
-//    SearchCommand(MainWidget* w) : TextCommand(w) {};
-//
-//    void perform() {
-//        widget->perform_search(this->text.value(), false);
-//        if (TOUCH_MODE) {
-//            widget->show_search_buttons();
-//        }
-//    }
-//
-//    std::string get_name() {
-//        return "search";
-//    }
-//
-//    bool pushes_state() {
-//        return true;
-//    }
-//
-//    std::string text_requirement_name() {
-//        return "Search Term";
-//    }
-//
-//};
 
 class GetConfigCommand : public TextCommand {
 public:
@@ -1993,7 +1948,6 @@ public:
     RenameCommand(MainWidget* w) : TextCommand(cname, w) {};
 
     void perform() {
-        //widget->add_text_annotation_to_selected_highlight(this->text.value());
         widget->handle_rename(text.value());
     }
 
@@ -2004,7 +1958,6 @@ public:
         widget->text_command_line_edit->setText(
             file_name
         );
-        //QString paper_name = QString::fromStdWString(widget->doc()->detect_paper_name());
 
     }
 
@@ -2022,10 +1975,6 @@ public:
     void perform() {
         float thickness = QString::fromStdWString(this->text.value()).toFloat();
         widget->set_freehand_thickness(thickness);
-        //widget->perform_search(this->text.value(), false);
-        //if (TOUCH_MODE) {
-        //	widget->show_search_buttons();
-        //}
     }
 
 
@@ -2239,8 +2188,6 @@ public:
         AbsoluteDocumentPos main_window_pos = widget->main_document_view->get_offsets();
         AbsoluteDocumentPos click_pos = rect_->center().to_window(widget->scratchpad).to_absolute(widget->main_document_view);
 
-        //float diff_x = main_window_pos.x - scratchpad_pos.x;
-        //float diff_y = main_window_pos.y - scratchpad_pos.y;
 
         auto indices = widget->scratchpad->get_intersecting_objects(rect_.value());
         std::vector<FreehandDrawing> drawings;
@@ -2300,7 +2247,6 @@ public:
         QPixmap pixmap(static_cast<int>(window_qrect.width() * ratio), static_cast<int>(window_qrect.height() * ratio));
         pixmap.setDevicePixelRatio(ratio);
 
-        //widget->render(&pixmap, QPoint(), QRegion(widget->rect()));
         widget->render(&pixmap, QPoint(), QRegion(window_qrect));
         QApplication::clipboard()->setPixmap(pixmap);
 
@@ -2344,7 +2290,6 @@ public:
         QPixmap pixmap(static_cast<int>(window_qrect.width() * ratio), static_cast<int>(window_qrect.height() * ratio));
         pixmap.setDevicePixelRatio(ratio);
 
-        //widget->render(&pixmap, QPoint(), QRegion(widget->rect()));
         widget->render(&pixmap, QPoint(), QRegion(window_qrect));
         widget->toggle_scratchpad_mode();
         widget->add_pixmap_to_scratchpad(pixmap);
@@ -2416,7 +2361,6 @@ public:
     }
 
     void perform() {
-        //widget->doc()->add_freetext_bookmark(text_.value(), rect_.value());
         if (text_.value().size() > 0) {
             std::string uuid = widget->doc()->add_pending_bookmark(pending_index, text_.value());
             result = utf8_decode(uuid);
@@ -2559,7 +2503,6 @@ public:
 
 
     void handle_generic_requirement() {
-        //widget->handle_goto_loaded_document();
         widget->handle_goto_toc();
     }
 
@@ -2825,7 +2768,6 @@ public:
     }
 
     void perform() {
-        //widget->framebuffer_screenshot(file_name);
         widget->export_command_names(file_name);
     }
 
@@ -2856,7 +2798,6 @@ public:
     }
 
     void perform() {
-        //widget->framebuffer_screenshot(file_name);
         widget->export_config_names(file_name);
     }
 
@@ -3720,9 +3661,6 @@ public:
             widget->set_text_prompt_text(
                 QString::fromStdWString(widget->doc()->get_highlights()[index].text_annot));
         }
-        //widget->text_command_line_edit->setText(
-        //    QString::fromStdWString(widget->doc()->get_highlights()[widget->selected_highlight_index].text_annot)
-        //);
     }
 
     void perform() {
@@ -3782,7 +3720,6 @@ public:
 
                 handle_indices_pre_perform();
                 widget->invalidate_render();
-                //widget->handle_highlight_tags_pre_perform(visible_item_indices);
             }
             already_pre_performed = true;
         }
@@ -3812,9 +3749,6 @@ public:
         if (tag.size() > 0) {
             int index = get_index_from_tag(tag);
             perform_with_selected_index(index);
-            //if (index < visible_item_indices.size()) {
-            //    widget->set_selected_highlight_index(visible_highlight_indices[index]);
-            //}
             should_clear_labels = true;
         }
         else {
@@ -5025,7 +4959,6 @@ KeyboardSelectPointCommand::KeyboardSelectPointCommand(MainWidget* w, std::uniqu
     if (next_requirement && next_requirement->type == Rect) {
         requires_rect = true;
     }
-    //if(origin->next_requirement(widget) && origin->next_requirement(widget)-> )
 };
 
 void KeyboardSelectPointCommand::on_cancel() {
@@ -5084,7 +5017,6 @@ void KeyboardSelectPointCommand::perform() {
         AbsoluteRect rect(pos1, pos2);
         origin->set_rect_requirement(rect);
         widget->set_rect_select_mode(false);
-        //origin->set_point_requirement(abspos);
     }
     else {
 
@@ -5862,8 +5794,6 @@ public:
     NextPreviewCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         if (widget->smart_view_candidates.size() > 0) {
-            //widget->index_into_candidates = (widget->index_into_candidates + 1) % widget->smart_view_candidates.size();
-            //widget->set_overview_position(widget->smart_view_candidates[widget->index_into_candidates].page, widget->smart_view_candidates[widget->index_into_candidates].y);
             widget->goto_ith_next_overview(1);
         }
     }
@@ -5877,8 +5807,6 @@ public:
     PreviousPreviewCommand(MainWidget* w) : Command(cname, w) {};
     void perform() {
         if (widget->smart_view_candidates.size() > 0) {
-            //widget->index_into_candidates = mod(widget->index_into_candidates - 1, widget->smart_view_candidates.size());
-            //widget->set_overview_position(widget->smart_view_candidates[widget->index_into_candidates].page, widget->smart_view_candidates[widget->index_into_candidates].y);
             widget->goto_ith_next_overview(-1);
         }
     }
@@ -6007,7 +5935,6 @@ public:
                     paper_name_editor->set_text(paper_name.value());
                     widget->close_overview();
                 }
-                //widget->close_overview();
             }
             else {
                 widget->text_command_line_edit->setText(
@@ -6488,7 +6415,6 @@ public:
     }
 
     void perform() {
-        //std::wstring embedded_pdf_file_name = select_new_pdf_file_name();
         if (file_path->size() > 0) {
             widget->main_document_view->get_document()->embed_annotations(file_path.value());
         }
@@ -6860,7 +6786,6 @@ public:
 	}
 
 	void perform() {
-        //widget->config_manager->deserialize_config(config_name, text.value());
         auto conf = widget->config_manager->get_mut_config_with_name(utf8_decode(config_name));
         *(bool*)conf->value = !*(bool*)conf->value;
         widget->on_config_changed(config_name);
@@ -8005,7 +7930,6 @@ InputParseTreeNode* parse_lines(
                     std::wstring joined_command = command_parts.join(";").toStdWString();
                     parent_node->generator = [joined_command, command_manager](MainWidget* w) {return std::make_unique<MacroCommand>(w, command_manager, "", joined_command); };
                 }
-                //if (command_names[j].size())
             }
             else {
                 if (SHOULD_WARN_ABOUT_USER_KEY_OVERRIDE && parent_node->is_final && (parent_node->name_.size() > 0)) {
@@ -8193,26 +8117,19 @@ std::unique_ptr<Command> InputHandler::handle_key(MainWidget* w, QKeyEvent* key_
     }
 
     for (InputParseTreeNode* child : current_node->children) {
-        //if (child->command == key && child->shift_modifier == shift_pressed && child->control_modifier == control_pressed){
         if (child->matches(key, shift_pressed, control_pressed, command_pressed, alt_pressed)) {
             if (child->is_final == true) {
                 current_node = root;
-                //cout << child->name << endl;
                 *num_repeats = 0;
                 if (number_stack.size() > 0) {
                     *num_repeats = atoi(number_stack.c_str());
                     number_stack.clear();
                 }
 
-                //return command_manager.get_command_with_name(child->name);
                 if (child->generator.has_value()) {
                     return (child->generator.value())(w);
                 }
                 return nullptr;
-                //for (size_t i = 0; i < child->name.size(); i++) {
-                //	res.push_back(command_manager->get_command_with_name(child->name[i]));
-                //}
-                //return res;
             }
             else {
                 current_node = child;
@@ -8361,7 +8278,6 @@ std::string InputHandler::get_key_name_from_key_code(int key_code) const {
         {Qt::Key::Key_Return, "return"},
     };
 
-    //if (((key_code <= 'z') && (key_code >= 'a')) || ((key_code <= 'Z') && (key_code >= 'A'))) {
     if (key_code < 127) {
         result.push_back(key_code);
         return result;

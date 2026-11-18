@@ -597,18 +597,6 @@ void get_flat_chars_from_stext_page_for_bib_detection(fz_stext_page* stext_page,
                     current_line_chars.push_back(chr);
                 }
 
-                //if (current_line_chars.size() < 5) {
-                //    bool found_dot = false;
-                //    for (auto c : current_line_chars) {
-                //        if (c->c == '.') {
-                //            found_dot = true;
-                //            break;
-                //        }
-                //    }
-                //    if (!found_dot) {
-                //        continue;
-                //    }
-                //}
                 if (current_line_chars.size() > 0) { // remove inverse references from end of lines
                     if (current_line_chars.back()->c <= 128 && (std::isdigit(current_line_chars.back()->c))) {
                         while (current_line_chars.size() > 0 && current_line_chars.back()->c != '.') {
@@ -652,31 +640,6 @@ void get_flat_chars_from_stext_page_for_bib_detection(fz_stext_page* stext_page,
             }
         }
     }
-    //std::vector<fz_stext_char*> temp_flat_chars;
-    //get_flat_chars_from_stext_page(stext_page, temp_flat_chars, true);
-    //std::vector<std::pair<int, int>> ranges_to_remove;
-
-    //for (int i = 0; i < temp_flat_chars.size(); i++) {
-    //    int begin_index = -1;
-    //    int end_index = -1;
-    //    if (is_index_reverse_reference_number(temp_flat_chars, i, &begin_index, &end_index)) {
-    //        ranges_to_remove.push_back(std::make_pair(begin_index, end_index));
-    //    }
-    //}
-
-    //int current_range_index = -1;
-    //if (ranges_to_remove.size() > 0) current_range_index = 0;
-
-    //for (int i = 0; i < temp_flat_chars.size(); i++) {
-    //    if ((current_range_index < ranges_to_remove.size() - 1) && (i > ranges_to_remove[current_range_index].second)) {
-    //        current_range_index += 1;
-    //    }
-
-    //    if ((current_range_index == -1) || !(i > ranges_to_remove[current_range_index].first && i <= ranges_to_remove[current_range_index].second)) {
-    //        flat_chars.push_back(temp_flat_chars[i]);
-    //    }
-
-    //}
 
 
 }
@@ -1207,7 +1170,6 @@ void run_command(std::wstring command, QStringList parameters, bool wait) {
     for (int i = 0; i < parameters.size(); i++) {
         qparameters.append(parameters[i]);
     }
-    //qparameters.append(QString::fromStdWString(parameters));
 
     if (wait) {
         process->start(qcommand, qparameters);
@@ -1268,14 +1230,6 @@ void search_libgen(const std::wstring& search_string) {
 
 
 
-//void open_url(const std::wstring& url_string) {
-//
-//	if (url_string.size() > 0) {
-//		QString qurl_string = QString::fromStdWString(url_string);
-//		open_url(qurl_string);
-//	}
-//}
-//
 void create_file_if_not_exists(const std::wstring& path) {
     std::string path_utf8 = utf8_encode(path);
     if (!QFile::exists(QString::fromStdWString(path))) {
@@ -1433,8 +1387,6 @@ void index_generic(const std::vector<fz_stext_char*>& flat_chars, int page_numbe
     }
 
     std::wregex index_dst_regex(L"(^|\n)[A-Z][a-zA-Z]{2,}\\.?[ \t]+[0-9]+(\\.[0-9]+)*");
-    //std::wregex index_dst_regex(L"(^|\n)[A-Z][a-zA-Z]{2,}[ \t]+[0-9]+(\-[0-9]+)*");
-    //std::wregex index_src_regex(L"[a-zA-Z]{3,}[ \t]+[0-9]+(\.[0-9]+)*");
     std::wsmatch match;
 
 
@@ -1517,11 +1469,6 @@ void index_references(fz_stext_page* page, int page_number, std::map<std::wstrin
                 if (ch->c == ' ') {
                     continue;
                 }
-                //if (ch->c == '.') {
-                //	started = false;
-                //	temp_indices.clear();
-                //	current_text.clear();
-                //}
 
                 // references are usually at the beginning of the line, we consider the possibility
                 // of up to 3 extra characters before the reference (e.g. numbers, extra spaces, etc.)
@@ -1540,7 +1487,6 @@ void index_references(fz_stext_page* page, int page_number, std::map<std::wstrin
                     index_data.text = current_text;
 
                     temp_indices.push_back(index_data);
-                    //indices[text] = index_data;
 
                     for (auto index : temp_indices) {
                         indices[index.text] = index;
@@ -1699,7 +1645,6 @@ float standard_deviation(std::vector<T> values, float average_value) {
     return std::sqrt(static_cast<float>(sum) / values.size());
 }
 
-//std::vector<unsigned int> get_line_ends_from_histogram(std::vector<unsigned int> histogram) {
 void get_line_begins_and_ends_from_histogram(std::vector<unsigned int> histogram, std::vector<unsigned int>& res_begins, std::vector<unsigned int>& res) {
 
     float mean_width = average_value(histogram);
@@ -1786,7 +1731,6 @@ int find_best_vertical_line_location(fz_pixmap* pixmap, int doc_x, int doc_y) {
     int start_index, end_index;
     largest_contigous_ones(is_max_list, &start_index, &end_index);
 
-    //return doc_y + (start_index + end_index) / 2;
     return doc_y + start_index;
 }
 
@@ -2040,7 +1984,6 @@ std::wstring get_canonical_path(const std::wstring& path) {
     }
 
     QDir dir(QString::fromStdWString(expanded_path));
-    //return std::move(dir.canonicalPath().toStdWString());
     return std::move(dir.absolutePath().toStdWString());
 #endif
 
@@ -2101,32 +2044,6 @@ float type_name_similarity_score(std::wstring name1, std::wstring name2) {
 void check_for_updates(QWidget* parent, std::string current_version) {
 
     return;
-    //QString url = "https://github.com/ahrm/sioyek/releases/latest";
-    //QNetworkAccessManager* manager = new QNetworkAccessManager;
-
-    //QObject::connect(manager, &QNetworkAccessManager::finished, [=](QNetworkReply *reply) {
-    //	std::string response_text = reply->readAll().toStdString();
-    //	int first_index = response_text.find("\"");
-    //	int last_index = response_text.rfind("\"");
-    //	std::string url_string = response_text.substr(first_index + 1, last_index - first_index - 1);
-
-    //	std::vector<std::wstring> parts;
-    //	split_path(utf8_decode(url_string), parts);
-    //	if (parts.size() > 0) {
-    //		std::string version_string = utf8_encode(parts.back().substr(1, parts.back().size() - 1));
-
-    //		if (version_string != current_version) {
-    //			int ret = QMessageBox::information(parent, "Update", QString::fromStdString("Do you want to update from " + current_version + " to " + version_string + "?"),
-    //				QMessageBox::Ok | QMessageBox::Cancel,
-    //				QMessageBox::Cancel);
-    //			if (ret == QMessageBox::Ok) {
-    //				open_web_url(url);
-    //			}
-    //		}
-
-    //	}
-    //	});
-    //manager->get(QNetworkRequest(QUrl(url)));
 }
 
 QString expand_home_dir(QString path) {
@@ -2334,10 +2251,6 @@ struct Range merge_range(struct Range range1, struct Range range2) {
 
 float line_num_penalty(int num) {
     return 1.0f;
-    //if (num == 1) {
-    //	return 1.0f;
-    //}
-    //return 1.0f + static_cast<float>(num) / 5.0f;
 }
 
 float height_increase_penalty(float ratio) {
@@ -2355,8 +2268,6 @@ int find_best_merge_index_for_line_index(const std::vector<fz_stext_line*>& line
 
     return index;
     int max_merged_lines = 40;
-    //Range current_range = { lines[index]->bbox.y0, lines[index]->bbox.y1 };
-    //Range current_range_x = { lines[index]->bbox.x0, lines[index]->bbox.x1 };
     struct Range current_range = { line_rects[index].y0, line_rects[index].y1 };
     struct Range current_range_x = { line_rects[index].x0, line_rects[index].x1 };
     float maximum_height = current_range.size();
@@ -2534,7 +2445,6 @@ void merge_lines(
 
 int lcs(const char* X, const char* Y, int m, int n)
 {
-    //int L[m + 1][n + 1];
     std::vector<std::vector<int>> L;
     for (int i = 0; i < m + 1; i++) {
         L.push_back(std::vector<int>(n + 1));
@@ -2731,7 +2641,6 @@ QJniObject parseUriString(const QString& uriString) {
 
 QString android_file_uri_from_content_uri(QString uri) {
 
-    //    mainActivityObj = QtAndroid::androidActivity();
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     QJniObject uri_object = parseUriString(uri);
 
@@ -2745,7 +2654,6 @@ void android_tts_say(QString text) {
 
     QJniObject text_jni = QJniObject::fromString(text);
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
-    //QJniObject contentResolverObj = activity.callObjectMethod("saySomethingElse", "(Ljava/lang/String;)V", text_jni.object<jstring>());
     activity.callMethod<void>("ttsSay", "(Ljava/lang/String;)V", text_jni.object<jstring>());
 }
 
@@ -2764,10 +2672,6 @@ void android_tts_set_rate(float rate){
     activity.callMethod<void>("ttsSetRate", "(F)V", rate);
 }
 
-// void android_tts_stop_service(){
-//     QJniObject activity = QNativeInterface::QAndroidApplication::context();
-//     activity.callMethod<void>("stopTtsService", "()V");
-// }
 
 void android_tts_set_rest_of_document(QString rest){
     QJniObject rest_jni = QJniObject::fromString(rest);
@@ -2800,7 +2704,6 @@ fz_document* open_document_with_file_name(fz_context* context, std::wstring file
         stream = fz_open_memory(context, new_buffer, bytes.size());
     }
 
-    //return fz_open_document_with_stream(context, "application/pdf", stream);
     std::string file_name_str = utf8_encode(file_name);
     return fz_open_document_with_stream(context, file_name_str.c_str(), stream);
 #else
@@ -2817,7 +2720,6 @@ fz_document* open_document_with_file_name(fz_context* context, std::wstring file
 
         fz_layout_document(context, doc, epub_width, epub_height, EPUB_FONT_SIZE);
 
-        //int a = 2;
     }
     return doc;
 #endif
@@ -2829,9 +2731,6 @@ void convert_qcolor_to_float3(const QColor& color, float* out_floats) {
     *(out_floats + 2) = static_cast<float>(color.blue()) / 255.0f;
 }
 
-//QColor convert_float3_to_qcolor(const float* floats) {
-//    return QColor(get_color_qml_string(floats[0], floats[1], floats[2]));
-//}
 
 QColor convert_float3_to_qcolor(const float* floats) {
     int colors[3];
@@ -2862,18 +2761,12 @@ extern std::vector<MainWidget*> windows;
 
 QString android_file_name_from_uri(QString uri) {
 
-    //    mainActivityObj = QtAndroid::androidActivity();
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
 
     QJniObject contentResolverObj = activity.callObjectMethod
     ("getContentResolver", "()Landroid/content/ContentResolver;");
 
 
-    //	QAndroidJniObject cursorObj {contentResolverObj.callObjectMethod
-    //		("query",
-    //		 "(Landroid/net/Uri;[Ljava/lang/String;Landroid/os/Bundle;Landroid/os/CancellationSignal;)Landroid/database/Cursor;",
-    //		 parseUriString(fileName()).object(), QAndroidJniObject().object(), QAndroidJniObject().object(),
-    //		 QAndroidJniObject().object(), QAndroidJniObject().object())};
 
     QJniObject cursorObj{ contentResolverObj.callObjectMethod
         ("query",
@@ -2895,13 +2788,11 @@ QString android_file_name_from_uri(QString uri) {
 
 void check_pending_intents(const QString workingDirPath)
 {
-    //    QJniObject activity = QNativeInterface::QAndroidApplication::context();
     QJniObject activity = QNativeInterface::QAndroidApplication::context();
     if (activity.isValid()) {
         // create a Java String for the Working Dir Path
         QJniObject jniWorkingDir = QJniObject::fromString(workingDirPath);
         if (!jniWorkingDir.isValid()) {
-            //            emit shareError(0, tr("Share: an Error occured\nWorkingDir not valid"));
             return;
         }
         activity.callMethod<void>("checkPendingIntents", "(Ljava/lang/String;)V", jniWorkingDir.object<jstring>());
@@ -3705,7 +3596,6 @@ std::wstring get_paper_name_from_reference_text(std::wstring reference_text) {
         }
 
         QString str = QString::fromStdWString(reference_text);
-        //QRegularExpression reference_ending_dot_regex = QRegularExpression("(\.\w*In )|(\.\w*[aA]r[xX]iv )|(\.\w*[aA]r[X]iv )");
         QRegularExpression reference_ending_dot_regex = QRegularExpression("(\\.\\w*In )|(\\.\w*[aA]r[xX]iv )");
 
         int ending_index = str.lastIndexOf(reference_ending_dot_regex);
@@ -3722,9 +3612,6 @@ std::wstring get_paper_name_from_reference_text(std::wstring reference_text) {
             str = str.left(ending_index - 1);
             int starting_index = str.lastIndexOf(".");
             QString res = str.right(str.size() - starting_index - 1).trimmed();
-            //if (res.size() > 0 && res[0] == ':') {
-            //    res = res.right(res.size() - 1);
-            //}
             if (res.size() > 10) {
                 return strip_garbage_from_paper_name(res.toStdWString());
             }
@@ -3831,7 +3718,6 @@ bool is_dot_index_end_of_a_reference(const std::vector<DocumentCharacter>& flat_
                 context.push_back(flat_chars[i].c);
             }
             int a = 2;
-            //qDebug() << QString::fromStdWString(context) << "!!" << QString(QChar(flat_chars[next_non_whitespace_index]->c));
         }
         fz_rect dot_rect = flat_chars[prev_index].rect;
         fz_rect next_rect = flat_chars[next_non_whitespace_index].rect;
@@ -3976,8 +3862,6 @@ std::vector<SearchResult> search_text_with_index(const std::wstring& super_fast_
 
     for (; it != super_fast_search_index.end(); it = std::search(it + 1, super_fast_search_index.end(), searcher)) {
         int start_index = it - super_fast_search_index.begin();
-        //std::deque<fz_rect> match_rects;
-        //std::vector<fz_rect> compressed_match_rects;
 
         while ((match_page < page_begin_indices.size() - 1) && page_begin_indices[match_page + 1] <= start_index) match_page++;
 
@@ -4053,7 +3937,6 @@ std::vector<SearchResult> search_regex_with_index(const std::wstring& super_fast
         std::deque<fz_rect> match_rects;
         std::vector<fz_rect> compressed_match_rects;
 
-        //int match_page = super_fast_search_index_pages[offset + match.position()];
 
         if (match_page >= begin_page) {
             is_before = false;

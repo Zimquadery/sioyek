@@ -305,7 +305,6 @@ void configure_paths() {
 #endif
 #else //windows
 #ifdef NDEBUG
-    //install_app(exe_path.c_str());
 #endif
     standard_data_path = Path(QStandardPaths::standardLocations(QStandardPaths::AppDataLocation).at(0).toStdWString());
     QStringList all_config_paths = QStandardPaths::standardLocations(QStandardPaths::AppConfigLocation);
@@ -406,7 +405,6 @@ MainWidget* get_window_with_opened_file_path(const std::wstring& file_path) {
 
     if (file_path.size() > 0) {
         for (auto window : windows) {
-            //if (window->doc() && window->doc()->get_path() == file_path) {
 
             if (window->doc()) {
 
@@ -588,7 +586,6 @@ MainWidget* handle_args(const QStringList& arguments, QLocalSocket* origin=nullp
             if (!nofocus){
                 target_window->raise();
             }
-            //target_window->activateWindow();
         }
     }
     if (parser->isSet("execute-command")) {
@@ -698,8 +695,6 @@ int main(int argc, char* args[]) {
 
     int nrows, ncols;
 
-    //load_npy(":/data/embedding.npy", embedding_weights, &nrows, &ncols);
-    //load_npy(":/data/linear.npy", linear_weights, &nrows, &ncols);
 
     QSurfaceFormat format;
 #ifdef SIOYEK_ANDROID
@@ -892,7 +887,6 @@ int main(int argc, char* args[]) {
         if (windows.size() > 0) {
             windows[0]->on_socket_deleted(deleted_socket);
         }
-        //main_widget->on_socket_deleted(deleted_socket);
         });
 #endif
 
@@ -900,8 +894,6 @@ int main(int argc, char* args[]) {
         main_widget->toggle_dark_mode();
     }
 
-    //QString startup_commands_list = QString::fromStdWString(STARTUP_COMMANDS);
-    //QStringList startup_commands = startup_commands_list.split(";");
     NewFileChecker new_file_checker(PAPERS_FOLDER_PATH, main_widget);
 
 
@@ -913,11 +905,9 @@ int main(int argc, char* args[]) {
             MainWidget* target = handle_args(args, socket);
             if (!nofocus) {
                 if (target) {
-                    //target->activateWindow();
                     focus_on_widget(target);
                 }
                 else if (windows.size() > 0) {
-                    //windows[0]->activateWindow();
                     focus_on_widget(windows[0]);
                 }
             }
@@ -947,7 +937,6 @@ int main(int argc, char* args[]) {
     handle_args(app.arguments());
     main_widget->execute_macro_if_enabled(STARTUP_COMMANDS);
 
-    //main_widget->run_multiple_commands(STARTUP_COMMANDS);
 
     // live reload the config files, no need to live reload on android because we are not changing config files anyway
 #ifndef SIOYEK_ANDROID

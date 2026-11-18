@@ -474,7 +474,6 @@ public:
     void handle_click(WindowPos pos);
 
     void update_selected_bookmark_font_size();
-    //bool eventFilter(QObject* obj, QEvent* event) override;
     void set_command_textbox_text(const std::wstring& txt);
     void change_selected_highlight_type(char new_type);
     void change_selected_bookmark_text(const std::wstring& new_text);
@@ -498,7 +497,6 @@ public:
     void long_jump_to_destination(int page, float offset_y);
     void long_jump_to_destination(float abs_offset_y);
     void execute_command(std::wstring command, std::wstring text = L"", bool wait = false);
-    //QString get_status_stylesheet();
     void smart_jump_under_pos(WindowPos pos);
     bool overview_under_pos(WindowPos pos);
     void visual_mark_under_pos(WindowPos pos);
@@ -559,7 +557,6 @@ public:
 
     ~MainWidget();
 
-    //void handle_command(NewCommand* command, int num_repeats);
     bool handle_command_types(std::unique_ptr<Command> command, int num_repeats, std::wstring* result = nullptr);
     void handle_pending_text_command(std::wstring text);
 
@@ -597,7 +594,6 @@ public:
     void toggle_dark_mode();
     void toggle_custom_color_mode();
     void do_synctex_forward_search(const Path& pdf_file_path, const Path& latex_file_path, int line, int column);
-    //void handle_args(const QStringList &arguments);
     void update_link_with_opened_book_state(Portal lnk, const OpenedBookState& new_state);
     void update_closest_link_with_opened_book_state(const OpenedBookState& new_state);
     void set_current_widget(QWidget* new_widget);
@@ -647,10 +643,8 @@ public:
     fz_stext_char* get_closest_character_to_cusrsor(QPoint pos);
     void set_status_message(std::wstring new_status_string);
     void remove_self_from_windows();
-    //void handle_additional_command(std::wstring command_name, bool wait=false);
     std::optional<DocumentPos> get_overview_position();
     void handle_keyboard_select(const std::wstring& text);
-    //void run_multiple_commands(const std::wstring& commands);
     void push_state(bool update = true);
     void toggle_scrollbar();
     void update_scrollbar();
@@ -821,7 +815,6 @@ public:
 
     int num_visible_links();
 #ifdef SIOYEK_ANDROID
-    //    void onApplicationStateChanged(Qt::ApplicationState applicationState);
     bool pending_intents_checked = false;
 #endif
 
@@ -943,7 +936,6 @@ public:
     void print_undocumented_commands();
     void print_undocumented_configs();
     void print_non_default_configs();
-    //void advance_wait_for_render_if_ready();
     bool is_render_ready();
     bool is_search_ready();
     bool is_index_ready();
@@ -1048,8 +1040,6 @@ public:
     Q_INVOKABLE void ensure_player_state(QString state);
     QString get_rest_of_document_pages_text();
     void focus_on_character_offset_into_document(int character_offset_into_document);
-    // void stop_tts_service();
-    //void handle_move_smooth_press(bool down);
     void handle_move_smooth_hold(bool down);
     void handle_move_smooth_horizontal_hold(bool left);
     void handle_toggle_two_page_mode();

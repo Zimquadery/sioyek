@@ -23,7 +23,6 @@ public:
     void create_directories();
     bool dir_exists() const;
     bool file_exists() const;
-    //std::wstring add_redundant_dot() const;
 
 };
 std::wostream& operator<<(std::wostream& stream, const Path& path);

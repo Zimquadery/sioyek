@@ -88,11 +88,6 @@ void Path::create_directories()
     QDir().mkpath(QString::fromStdWString(canon_path));
 }
 
-//std::wstring Path::add_redundant_dot() const
-//{
-//	std::wstring file_name = filename().value();
-//	return parent().get_path() + L"/./" + file_name;
-//}
 
 bool Path::dir_exists() const
 {
@@ -118,29 +113,3 @@ void copy_file(Path src, Path dst)
 {
     QFile::copy(QString::fromStdWString(src.get_path()), QString::fromStdWString(dst.get_path()));
 }
-
-
-//Path add_redundant_dot_to_path(const Path& sane_path) {
-//
-//	std::wstring file_name = sane_path.filename();
-//
-////#ifdef Q_OS_WIN
-////	wchar_t separator = '\\';
-////#else
-////	wchar_t separator = '/';
-////#endif
-////
-////	std::vector<std::wstring> parts;
-////	split_path(sane_path, parts);
-////	std::wstring res = L"";
-////	for (int i = 0; i < parts.size(); i++) {
-////		res = concatenate_path(res, parts[i]);
-////	}
-//
-//	//QDir sane_path_dir(QString::fromStdWString(sane_path));
-//	//sane_path_dir.filenam
-//	//sane_path_dir.cdUp();
-//
-//	//return concatenate_path(concatenate_path(sane_path_dir.canonicalPath().toStdWString(), L"."), sa
-//	//return sane_path.parent_path() / "." / sane_path.filename();
-//}

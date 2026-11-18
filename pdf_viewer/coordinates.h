@@ -88,10 +88,6 @@ struct DocumentRect;
 struct AbsoluteRect;
 struct NormalizedWindowRect;
 
-//struct PagelessDocumentRect : public fz_rect {
-//    PagelessDocumentRect();
-//    PagelessDocumentRect(fz_rect r);
-//};
 
 
 template<typename R, typename T>
@@ -216,14 +212,6 @@ struct AbsoluteRect : public EnhancedRect<fz_rect, AbsoluteDocumentPos> {
     WindowRect to_window(DocumentView* document_view);
 };
 
-//template<typename T, int dim>
-//operator+ (Vec<T, dim> a, Vec<T, dim> b) {
-//	Vec<T, dim> c;
-//	for (int i = 0; i < dim; i++) {
-//		c.values[i] = a.values[i] + b.values[i];
-//	}
-//	return c;
-//}
 bool are_same(const AbsoluteDocumentPos& lhs, const AbsoluteDocumentPos& rhs);
 
 template<typename T, int dim>

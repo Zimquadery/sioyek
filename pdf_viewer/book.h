@@ -140,7 +140,6 @@ struct Highlight : Annotation {
 
 
 struct PdfLink {
-    //fz_rect rect;
     std::vector<PagelessDocumentRect> rects;
     int source_page;
     std::string uri;

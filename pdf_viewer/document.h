@@ -112,7 +112,6 @@ private:
     std::mutex pdf_ingest_mutex;
     std::atomic<bool> pdf_ingest_result_ready = false;
     std::vector<TocNode*> top_level_toc_nodes;
-    //bool only_for_portal = true;
 
     // automatically generated table of contents entries
     std::vector<TocNode*> created_top_level_toc_nodes;
@@ -251,7 +250,6 @@ public:
     std::wstring get_path();
     std::string get_checksum();
     std::optional<std::string> get_checksum_fast();
-    //int find_closest_bookmark_index(float to_offset_y);
 
     int find_closest_bookmark_index(const std::vector<BookMark>& sorted_bookmarks, float to_offset_y) const;
     int find_closest_portal_index(const std::vector<Portal>& sorted_bookmarks, float to_offset_y) const;
@@ -300,7 +298,6 @@ public:
     std::wstring get_page_label(int page_index);
     int get_page_number_with_label(std::wstring page_label);
     bool is_reflowable();
-    //float get_page_width_smart(int page_index, float* left_ratio, float* right_ratio, int* normal_page_width);
     float get_page_size_smart(bool width, int page_index, float* left_ratio, float* right_ratio, int* normal_page_width);
     float get_accum_page_height(int page_index);
     void rotate();
@@ -427,7 +424,6 @@ public:
     bool needs_password();
     bool needs_authentication();
     bool apply_password(const char* password);
-    //std::optional<std::string> get_page_fastread_highlights(int page);
     std::vector<PagelessDocumentRect> get_highlighted_character_masks(int page);
     PagelessDocumentRect get_page_rect_no_cache(int page);
     std::optional<PdfLink> get_link_in_pos(int page, float x, float y);
@@ -437,19 +433,16 @@ public:
     std::string get_highlight_index_uuid(int index);
     std::string get_bookmark_index_uuid(int index);
 
-    //void create_table_of_contents(std::vector<TocNode*>& top_nodes);
     int add_stext_page_to_created_toc(fz_stext_page* stext_page,
         int page_number,
         std::vector<TocNode*>& toc_node_stack,
         std::vector<TocNode*>& top_level_node);
 
     float document_to_absolute_y(int page, float doc_y);
-    //AbsoluteDocumentPos document_to_absolute_pos(DocumentPos, bool center_mid = false);
     AbsoluteDocumentPos document_to_absolute_pos(DocumentPos docpos);
 
     AbsoluteRect document_to_absolute_rect(DocumentRect doc_rect);
 
-    //void get_ith_next_line_from_absolute_y(float absolute_y, int i, bool cont, float* out_begin, float* out_end);
     AbsoluteRect get_ith_next_line_from_absolute_y(int page, int line_index, int i, bool continue_to_next_page, int* out_index, int* out_page);
     const std::vector<AbsoluteRect>& get_page_lines(
         int page,
@@ -470,12 +463,9 @@ public:
     void load_drawings();
     void load_annotations(bool sync = false);
     void load_drawings_async();
-    //void persist_drawings_async();
 
     std::wstring detect_paper_name(fz_context* context, fz_document* doc);
     std::wstring detect_paper_name();
-    //void set_only_for_portal(bool val);
-    //bool get_only_for_portal();
 
     bool is_super_fast_index_ready();
     std::vector<SearchResult> search_text(std::wstring query, SearchCaseSensitivity case_sensitive, int begin_page, int min_page, int max_page);

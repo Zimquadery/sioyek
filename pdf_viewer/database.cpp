@@ -140,7 +140,6 @@ static int global_mark_select_callback(void* res_vector, int argc, char** argv, 
     std::vector<std::pair<std::string, float>>* res = (std::vector<std::pair<std::string, float>>*)res_vector;
     assert(argc == 2);
 
-    //char symbol = argv[0][0];
     std::string path = argv[0];
     float offset_y = atof(argv[1]);
 
@@ -349,12 +348,8 @@ static int wstring_pair_select_callback(void* res_vector, int argc, char** argv,
 
 static int version_callback(void* res, int argc, char** argv, char** col_name) {
 
-    //std::vector<std::pair<std::wstring, std::wstring>>* res = (std::vector<std::pair<std::wstring, std::wstring>>*)res_vector;
     assert(argc == 1);
     *(int*)res = atoi(argv[0]);
-    //std::wstring first = utf8_decode(argv[0]);
-    //std::wstring second = utf8_decode(argv[1]); 
-    //res->push_back(std::make_pair(first, second));
 
     return 0;
 }
@@ -660,19 +655,6 @@ bool DatabaseManager::create_links_table() {
         error_message);
 }
 
-//bool DatabaseManager::insert_book(const std::string& path, float zoom_level, float offset_x, float offset_y) {
-//	const char* insert_books_sql = ""\
-//		"INSERT INTO opened_books (PATH, zoom_level, offset_x, offset_y, last_access_time) VALUES ";
-//
-//	std::wstringstream ss;
-//	ss << insert_books_sql << "'" << esc(path) << "', " << zoom_level << ", " << offset_x << ", " << offset_y << ", datetime('now');";
-//	
-//	char* error_message = nullptr;
-//	int error_code = sqlite3_exec(global_db, utf8_encode(ss.str()).c_str(), null_callback, 0, &error_message);
-//	return handle_error(
-//		error_code,
-//		error_message);
-//}
 
 bool DatabaseManager::insert_document_hash(const std::wstring& path, const std::string& checksum) {
     std::lock_guard<std::recursive_mutex> lock(db_mutex);
@@ -1038,16 +1020,6 @@ bool DatabaseManager::select_opened_book(const std::string& book_path, std::vect
         error_message);
 }
 
-//bool delete_mark_with_symbol(sqlite3* db, char symbol) {
-//
-//	std::wstringstream ss;
-//	ss << "DELETE FROM marks where symbol='" << symbol << "';";
-//	char* error_message = nullptr;
-//
-//	return handle_error(
-//		sqlite3_exec(db, utf8_encode(ss.str()).c_str(), null_callback, 0, &error_message),
-//		error_message);
-//}
 
 bool DatabaseManager::delete_opened_book(const std::string& book_path) {
     std::lock_guard<std::recursive_mutex> lock(db_mutex);
@@ -1086,27 +1058,6 @@ bool DatabaseManager::select_opened_books_path_and_doc_names(std::vector<std::pa
         error_message);
 }
 
-//bool DatabaseManager::select_opened_books_hashes_and_names(std::vector<std::pair<std::wstring, std::wstring>> &out_result) {
-//	std::vector<std::wstring> hashes;
-//	select_opened_books_path_values(hashes);
-//	for (const auto& hash : hashes) {
-//		std::vector<std::wstring> paths;
-//		get_path_from_hash(utf8_encode(hash), paths);
-//		if (paths.size() > 0) {
-//			out_result.push_back(std::make_pair(hash, paths.back()));
-//		}
-//	}
-//	return true;
-//	//this->select_
-//	//this->sele
-//		//std::wstringstream ss;
-//		//ss << "SELECT opened_books.path, document_hash.path FROM opened_books, document_hash where opened_books.path=document_hash.hash order by datetime(opened_books.last_access_time) desc;";
-//		//char* error_message = nullptr;
-//		//int error_code = sqlite3_exec(db, utf8_encode(ss.str()).c_str(), wstring_pair_select_callback, &out_result, &error_message);
-//		//return handle_error(
-//		//	error_code,
-//		//	error_message);
-//}
 
 bool DatabaseManager::select_mark(const std::string& book_path, std::vector<Mark>& out_result) {
     std::lock_guard<std::recursive_mutex> lock(db_mutex);
@@ -1546,14 +1497,12 @@ void DatabaseManager::import_json(std::wstring json_file_path, CachedChecksummer
     QJsonObject imported_json = json_document.object();
     QJsonArray documents_json_array = imported_json.value("documents").toArray();
 
-    //std::vector<JsonDocumentData> imported_documents;
 
     for (int i = 0; i < documents_json_array.size(); i++) {
 
         QJsonObject current_json_doc = documents_json_array.at(i).toObject();
 
         std::string checksum = current_json_doc["checksum"].toString().toStdString();
-        //std::wstring path = current_json_doc["path"].toString().toStdWString();
         float offset_x = current_json_doc["offset_x"].toDouble();
         float offset_y = current_json_doc["offset_y"].toDouble();
         float zoom_level = current_json_doc["zoom_level"].toDouble();
@@ -1582,7 +1531,6 @@ void DatabaseManager::import_json(std::wstring json_file_path, CachedChecksummer
         std::optional<std::wstring> path = checksummer->get_path(checksum);
 
         if (path) {
-            //update_book(db, path.value(), zoom_level, offset_x, offset_y);
             update_book(checksum, zoom_level, offset_x, offset_y);
         }
 
@@ -1843,14 +1791,7 @@ void DatabaseManager::migrate_version_0_to_1() {
         run_schema_query("ROLLBACK;");
     }
 
-    //for (int i = 0; i < queries_to_run.size(); i++) {
-    //	if (!run_schema_query(queries_to_run[i].c_str())) {
-    //		qDebug() << "Error: could not migrate database";
-    //	}
-    //}
 
-    //std::vector<std::pair<std::wstring, std::wstring>> path_hashes;
-    //get_prev_path_hash_pairs(path_hashes);
 
 
 }
