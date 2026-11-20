@@ -174,14 +174,10 @@ QStringList convert_arguments(QStringList input_args) {
     parser->parse(input_args);
 
     QStringList output_args;
-    QString path_arg = "";
-    if (parser->positionalArguments().size() > 0) {
-        // the first positional argument is the path
-        path_arg = parser->positionalArguments()[0];
-    }
+    QStringList positional_args = parser->positionalArguments();
 
     for (auto arg : input_args) {
-        if (arg == path_arg) {
+        if (positional_args.contains(arg)) {
             std::wstring path_wstring = strip_uri(arg.toStdWString(), {});
             Path path_object(path_wstring);
             output_args.push_back(QString::fromStdWString(path_object.get_path()));
