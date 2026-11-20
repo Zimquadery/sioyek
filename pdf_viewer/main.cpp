@@ -642,8 +642,7 @@ MainWidget* handle_args(const QStringList& arguments, QLocalSocket* origin=nullp
     if (positional_args.size() > 1) {
         std::vector<std::wstring> extra_file_names;
         for (int i = 1; i < positional_args.size(); i++) {
-            std::optional<int> extra_page = -1;
-            std::wstring extra_file_name = strip_uri(positional_args.at(i).toStdWString(), &extra_page);
+            std::wstring extra_file_name = strip_uri(positional_args.at(i).toStdWString(), {});
             std::wstring canonical_extra_path = (extra_file_name.size() > 0) ? get_canonical_path(extra_file_name) : L"";
             QFileInfo extra_info(QString::fromStdWString(canonical_extra_path));
             if (extra_info.isFile() && extra_info.exists()) {
