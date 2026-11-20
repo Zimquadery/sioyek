@@ -4630,6 +4630,9 @@ void MainWidget::open_document(const std::wstring& doc_path,
 
     if (main_document_view) {
         main_document_view->persist();
+        if (main_document_view->get_document()) {
+            document_manager->cache_view_state(main_document_view->get_state());
+        }
     }
 
     main_document_view->open_document(doc_path, invalid_flag, load_prev_state, prev_state, force_load_dimensions);
