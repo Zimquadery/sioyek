@@ -505,6 +505,7 @@ private:
     std::unordered_map<std::wstring, Document*> cached_documents;
     std::unordered_map<std::string, std::wstring> hash_to_path;
     std::vector<std::wstring> tabs;
+    std::unordered_map<std::wstring, OpenedBookState> view_state_cache;
 public:
 
     DocumentManager(fz_context* mupdf_context, DatabaseManager* db_manager, CachedChecksummer* checksummer);
@@ -513,6 +514,8 @@ public:
     int add_tab(const std::wstring& path);
     void remove_tab(const std::wstring& path);
     std::vector<std::wstring> get_tabs();
+    void cache_view_state(const DocumentViewState& view_state);
+    std::optional<OpenedBookState> get_cached_view_state(const std::wstring& path);
 
     Document* get_document(const std::wstring& path);
     std::optional<std::wstring> get_path_from_hash(const std::string& checksum);

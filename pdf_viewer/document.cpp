@@ -2833,6 +2833,7 @@ void DocumentManager::free_document(Document* document) {
     }
     if (found) {
         cached_documents.erase(path_to_erase);
+        view_state_cache.erase(path_to_erase);
     }
 
     delete document;
@@ -4392,6 +4393,20 @@ void DocumentManager::remove_tab(const std::wstring& path) {
 
 std::vector<std::wstring> DocumentManager::get_tabs() {
     return tabs;
+}
+
+void DocumentManager::cache_view_state(const DocumentViewState& view_state) {
+    if (view_state.document_path.size() > 0) {
+        view_state_cache[view_state.document_path] = view_state.book_state;
+    }
+}
+
+std::optional<OpenedBookState> DocumentManager::get_cached_view_state(const std::wstring& path) {
+    auto loc = view_state_cache.find(path);
+    if (loc != view_state_cache.end()) {
+        return loc->second;
+    }
+    return {};
 }
 
 std::wstring Document::detect_paper_name() {

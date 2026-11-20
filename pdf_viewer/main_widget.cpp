@@ -2131,6 +2131,9 @@ void MainWidget::open_document(const std::wstring& path, std::optional<float> of
     //save the previous document state
     if (main_document_view) {
         main_document_view->persist(true);
+        if (main_document_view->get_document()) {
+            document_manager->cache_view_state(main_document_view->get_state());
+        }
     }
 
     if (main_document_view->get_view_width() > main_window_width) {
@@ -2143,6 +2146,15 @@ void MainWidget::open_document(const std::wstring& path, std::optional<float> of
         // failed to open document
         return;
     }
+
+    // when switching back to a previously viewed document, restore its exact in-session state
+    if ((!offset_x) && (!offset_y) && (!zoom_level)) {
+        std::optional<OpenedBookState> cached_state = document_manager->get_cached_view_state(doc()->get_path());
+        if (cached_state) {
+            main_document_view->set_book_state(cached_state.value());
+        }
+    }
+
     adjust_two_page_mode_document_zoom_and_offset(doc()->get_path());
 
     if (doc()) {
