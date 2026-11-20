@@ -641,6 +641,23 @@ MainWidget* handle_args(const QStringList& arguments, QLocalSocket* origin=nullp
         }
     }
 
+    // when multiple files are passed, register the extra files as tabs in the target window
+    QStringList positional_args = parser->positionalArguments();
+    if (positional_args.size() > 1) {
+        std::vector<std::wstring> extra_file_names;
+        for (int i = 1; i < positional_args.size(); i++) {
+            std::optional<int> extra_page = -1;
+            std::wstring extra_file_name = strip_uri(positional_args.at(i).toStdWString(), &extra_page);
+            if ((extra_file_name.size() > 0) && QFile::exists(QString::fromStdWString(extra_file_name))) {
+                extra_file_names.push_back(extra_file_name);
+            }
+            else {
+                LOG(std::wcerr << L"could not open file: " << extra_file_name << L"\n");
+            }
+        }
+        target_window->open_tabs(extra_file_names);
+    }
+
     if (parser->isSet("focus-text")) {
         QString text = parser->value("focus-text");
         int page = parser->value("focus-text-page").toInt();
