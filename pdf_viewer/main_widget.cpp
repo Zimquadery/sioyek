@@ -10329,6 +10329,7 @@ void MainWidget::handle_rename(std::wstring new_name) {
 
     if (old_qfile.rename(QString::fromStdWString(path_to_be_freed), new_file_path)) {
         db_manager->update_file_name(path_to_be_freed, new_file_path.toStdWString());
+        document_manager->remove_tab(path_to_be_freed);
         document_views_open_path(document_views_referencing_doc, document_views_referencing_doc_widgets, document_view_is_helper, new_file_path.toStdWString());
         update_renamed_document_in_history(path_to_be_freed, new_file_path.toStdWString());
         restore_document_view_states(document_views_referencing_doc, view_states);
