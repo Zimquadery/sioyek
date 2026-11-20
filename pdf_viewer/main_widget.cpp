@@ -1485,6 +1485,12 @@ std::wstring MainWidget::get_status_string(bool is_right) {
         status_string.replace("%{chapter_name}", " [ " + QString::fromStdWString(chapter_name) + " ] ");
     }
 
+    int num_tabs = static_cast<int>(document_manager->get_tabs().size());
+    int current_tab_index = get_current_tab_index();
+    if ((num_tabs > 1) && (current_tab_index != -1)) {
+        status_string.replace("%{tab_position}", " [ doc " + QString::number(current_tab_index + 1) + " / " + QString::number(num_tabs) + " ]");
+    }
+
     if (status_string.indexOf("%{document_name}") != -1) {
         std::optional<std::wstring> file_name = Path(main_document_view->get_document()->get_path()).filename();
         if (file_name) {
@@ -1674,6 +1680,7 @@ std::wstring MainWidget::get_status_string(bool is_right) {
     status_string.replace("%{custom_message}", "");
     status_string.replace("%{search_progress}", "");
     status_string.replace("%{download}", "");
+    status_string.replace("%{tab_position}", "");
     status_string.replace("\n", " ");
     status_string.replace("\r", "");
 
