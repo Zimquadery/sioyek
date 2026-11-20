@@ -648,8 +648,10 @@ MainWidget* handle_args(const QStringList& arguments, QLocalSocket* origin=nullp
         for (int i = 1; i < positional_args.size(); i++) {
             std::optional<int> extra_page = -1;
             std::wstring extra_file_name = strip_uri(positional_args.at(i).toStdWString(), &extra_page);
-            if ((extra_file_name.size() > 0) && QFile::exists(QString::fromStdWString(extra_file_name))) {
-                extra_file_names.push_back(extra_file_name);
+            std::wstring canonical_extra_path = (extra_file_name.size() > 0) ? get_canonical_path(extra_file_name) : L"";
+            QFileInfo extra_info(QString::fromStdWString(canonical_extra_path));
+            if (extra_info.isFile() && extra_info.exists()) {
+                extra_file_names.push_back(canonical_extra_path);
             }
             else {
                 LOG(std::wcerr << L"could not open file: " << extra_file_name << L"\n");
